@@ -1,0 +1,82 @@
+# Dependencies and package archives
+node_modules/
+.pnp
+.pnp.*
+*.tgz
+
+# Next.js / production output / framework caches
+.next/
+out/
+build/
+dist/
+.vercel/
+.netlify/
+.cache/
+.parcel-cache/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# Secrets and local configuration (the example is safe and tracked)
+.env
+.env.*
+!.env.example
+secrets/
+credentials/
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Local databases, dumps and uploads — never use production data in Git
+data/
+backups/
+dumps/
+*.sqlite
+*.sqlite3
+*.db
+*.dump
+*.backup
+public/uploads/
+
+# Test, browser and performance artifacts may contain cookies/private content
+coverage/
+.nyc_output/
+*.lcov
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/
+.lighthouseci/
+lighthouse-report*.html
+.artifacts/
+screenshots/
+
+# Raw reference images are internal; keep an approved written manifest instead.
+# Owned synthetic visual baselines under tests/ are not blanket-ignored.
+docs/references/*.png
+docs/references/*.jpg
+docs/references/*.jpeg
+docs/references/*.webp
+docs/references/*.gif
+docs/references/*.pdf
+
+# Logs and diagnostic output
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+core.[0-9]*
+
+# Editors/OS/agent-local state
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+.arena/
+
+# Keep package-lock.json, .nvmrc, .env.example and source/docs trackable.
