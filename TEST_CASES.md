@@ -1,6 +1,6 @@
 # AZmovies — Test Case and Evidence Register
 
-**Application status:** Not run. No application exists in Phase 1. Expected results below are acceptance criteria, not observations. Foundation checks are recorded separately with their actual scope.
+**Application status:** Phase 2 static fixture prototype executed locally. Homepage and movie-detail scoped checks have run; later-phase cases remain acceptance criteria, not observations. Foundation checks are recorded separately with their actual scope.
 
 ## 1. Foundation checks
 
@@ -34,6 +34,15 @@ FND-06/07/09 verify inspection capabilities only. FND-08 is an environment block
 | CMP-10 | Loading/empty/error states               | Geometry preserved; useful retry/reset; no private error details             | Pass    |
 | CMP-11 | Admin movie form                         | Field labels/errors, required fields, pending submit and stale-edit feedback | Not run |
 | CMP-12 | Link review form                         | Evidence required; target edit clears approval; revoke feedback truthful     | Not run |
+
+### Phase 2 movie-detail component/unit cases
+
+| ID      | Scenario                            | Expected result                                                                                                           | Status |
+| ------- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------- | ------ |
+| CMP-13  | Detail fixture sections render      | Shared shell, trending, title/info, gallery, quality/watch options, related movies and footer render from static fixtures | Pass   |
+| CMP-14  | Provider/watch/trailer placeholders | No external `href`; controls are `aria-disabled` placeholders with honest notes                                           | Pass   |
+| CMP-15  | Detail gallery and related grid     | Gallery is vertically scrollable; related grid keeps two columns without page overflow                                    | Pass   |
+| UNIT-01 | Detail fixtures for all slugs       | Every movie slug has genres/cast/stills/options/related; unknown slug returns undefined                                   | Pass   |
 
 ## 3. Public API and database cases (Phase 3/4)
 
@@ -107,26 +116,26 @@ FND-06/07/09 verify inspection capabilities only. FND-08 is an environment block
 
 ## 7. Functional, responsive and browser cases
 
-| ID      | Scenario                                       | Expected result                                                                 | Status                            |
-| ------- | ---------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------- |
-| FUN-01  | Browse→search→filter→detail→approved page      | Complete journey with correct URL state and truthful destination label          | Partial                           |
-| FUN-02  | Admin create→edit→approve link→publish→archive | Authorized lifecycle works; public visibility/audit correct                     | Not run                           |
-| FUN-03  | Back/forward/reload/deep link                  | Search/filter/page state restored without stale private data                    | Not run                           |
-| FUN-04  | No results/invalid filter/data failure         | Useful recovery; no fabricated content                                          | Pass                              |
-| RES-01  | 320/375/390 px mobile                          | Required two-column layout, readable metadata, no essential horizontal overflow | Pass                              |
-| RES-02  | 768/1024 px tablet                             | Approved sidebar/grid behavior and accessible navigation                        | Pass                              |
-| RES-03  | 1440/1920 px desktop                           | Reference density/alignment; no invented extra columns                          | Pass                              |
-| RES-04  | 200% zoom/320 px reflow/landscape              | Essential content/controls available; Telegram does not obscure actions         | Partial                           |
-| VIS-01  | Owner-reference comparison                     | Documented region geometry/colors/type; owner approves differences              | Executed — owner approval pending |
-| VIS-02  | Locked fixture visual regression               | No unreviewed snapshot changes                                                  | Not run                           |
-| A11Y-01 | Axe across public/admin states                 | No serious/critical violations; all findings reviewed                           | Not run                           |
-| A11Y-02 | Keyboard/skip link/dialog/form errors          | Logical focus, visible indicator, correct announcements and focus return        | Not run                           |
-| A11Y-03 | Contrast/reduced motion/touch targets          | Agreed accessibility thresholds met                                             | Not run                           |
-| A11Y-04 | Actual screen-reader smoke                     | Record tool/version and observed core journey; not inferred from axe            | Not run                           |
-| BRW-01  | Chromium engine                                | Core public/admin journeys and responsive checks pass                           | Pass                              |
-| BRW-02  | Firefox engine                                 | Same scoped matrix, actual engine version recorded                              | Not run                           |
-| BRW-03  | WebKit engine                                  | Same scoped matrix; not labeled real iOS Safari                                 | Not run                           |
-| BRW-04  | Real Android Chrome/iOS Safari if available    | Separately recorded device/OS results or explicit blocker                       | Not run                           |
+| ID      | Scenario                                       | Expected result                                                                 | Status                                                                                        |
+| ------- | ---------------------------------------------- | ------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| FUN-01  | Browse→search→filter→detail→approved page      | Complete journey with correct URL state and truthful destination label          | Partial                                                                                       |
+| FUN-02  | Admin create→edit→approve link→publish→archive | Authorized lifecycle works; public visibility/audit correct                     | Not run                                                                                       |
+| FUN-03  | Back/forward/reload/deep link                  | Search/filter/page state restored without stale private data                    | Partial — detail deep link and back-to-catalog passed; full state matrix not run              |
+| FUN-04  | No results/invalid filter/data failure         | Useful recovery; no fabricated content                                          | Pass                                                                                          |
+| RES-01  | 320/375/390 px mobile                          | Required two-column layout, readable metadata, no essential horizontal overflow | Pass                                                                                          |
+| RES-02  | 768/1024 px tablet                             | Approved sidebar/grid behavior and accessible navigation                        | Pass                                                                                          |
+| RES-03  | 1440/1920 px desktop                           | Reference density/alignment; no invented extra columns                          | Pass                                                                                          |
+| RES-04  | 200% zoom/320 px reflow/landscape              | Essential content/controls available; Telegram does not obscure actions         | Partial                                                                                       |
+| VIS-01  | Owner-reference comparison                     | Documented region geometry/colors/type; owner approves differences              | Executed — owner approval pending                                                             |
+| VIS-02  | Locked fixture visual regression               | No unreviewed snapshot changes                                                  | Not run                                                                                       |
+| A11Y-01 | Axe across public/admin states                 | No serious/critical violations; all findings reviewed                           | Partial — Chromium axe home/drawer/detail passed; admin not run                               |
+| A11Y-02 | Keyboard/skip link/dialog/form errors          | Logical focus, visible indicator, correct announcements and focus return        | Partial — drawer/search/detail navigation keyboard checks passed; screen-reader smoke not run |
+| A11Y-03 | Contrast/reduced motion/touch targets          | Agreed accessibility thresholds met                                             | Not run                                                                                       |
+| A11Y-04 | Actual screen-reader smoke                     | Record tool/version and observed core journey; not inferred from axe            | Not run                                                                                       |
+| BRW-01  | Chromium engine                                | Core public/admin journeys and responsive checks pass                           | Pass                                                                                          |
+| BRW-02  | Firefox engine                                 | Same scoped matrix, actual engine version recorded                              | Not run                                                                                       |
+| BRW-03  | WebKit engine                                  | Same scoped matrix; not labeled real iOS Safari                                 | Not run                                                                                       |
+| BRW-04  | Real Android Chrome/iOS Safari if available    | Separately recorded device/OS results or explicit blocker                       | Not run                                                                                       |
 
 ## 8. Security, performance and regression cases
 
@@ -153,5 +162,7 @@ FND-06/07/09 verify inspection capabilities only. FND-08 is an environment block
 - **2026-11-07, local checkpoint:** after the final checks above, `git commit` created `13ad936a25e236985068fa5d422f64aafdb04afa` on `arena/9177d6f3-azmovies` (18 files). No GitHub push was attempted. This is a Git checkpoint result, not an application test.
 
 - **2026-11-07, Phase 2 static prototype execution:** on commits `3f0120d`/`f1edf53` (before final documentation checkpoint), Node 22.22.3 / Next.js 16.4.5 / Chromium via `@sparticuz/chromium`: `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run verify:static` passed; `npm run test` passed 16/16 Vitest tests; `npm run build` passed with 51 static pages; `npx playwright test` passed 15/15 Chromium tests including axe home/drawer/detail and responsive widths 320/375/390/768/1024/1440/1920 plus 320 reflow/landscape. `npm run capture:prototype` and `npm run compare:visual` executed; artifacts: `.artifacts/phase2/prototype-*.png`, `prototype-metrics.json`, `comparison-primary-top.png`, `visual-comparison.json`, `playwright-results.json`, `static-boundary.json`. Runtime `npm audit --omit=dev` reported 0 vulnerabilities. VIS-01 is executed but not owner-approved; admin/auth/API/DB/live-provider/Firefox/WebKit/real-device/screen-reader/Lighthouse cases remain Not run.
+
+- **2026-11-07, Phase 2 movie-detail execution:** Node 22.22.3 / Next.js 16.4.5 / Chromium via `@sparticuz/chromium`: `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run verify:static` passed; `npm run test` passed 21/21 Vitest tests; `npm run build` passed with 51 static pages; `npm run test:e2e` passed 19/19 Chromium tests including homepage→detail→back, detail toolbar search, detail axe, detail responsive 320/768/1440 and existing homepage checks. `npm run analyze:references`, `npm run capture:prototype`, `npm run compare:visual` executed; detail artifacts include `.artifacts/phase2/prototype-360-detail-top.png`, `prototype-360-detail-gallery.png`, `prototype-360-detail-options.png`, `comparison-detail-top.png` and `prototype-metrics.json` (`detail360`: scrollWidth 360, gallery scrollHeight 558/clientHeight 420, relatedCards 4, externalLinks 0). Runtime `npm audit --omit=dev` reported 0 vulnerabilities. Owner visual approval remains pending; admin/auth/API/DB/live-provider/Firefox/WebKit/real-device/screen-reader/Lighthouse cases remain Not run.
 
 Future entries must include exact command, commit, environment, counts/results and sanitized artifact path. A planned case is never marked Pass to make a phase appear complete.

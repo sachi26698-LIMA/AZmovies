@@ -87,7 +87,27 @@ await page360.screenshot({ path: `${out}/prototype-360-drawer.png` });
 await page360.keyboard.press('Escape');
 await page360.locator('article h3 a').first().click();
 await settled(page360);
+await page360.screenshot({ path: `${out}/prototype-360-detail-top.png` });
 await page360.screenshot({ path: `${out}/prototype-360-detail.png`, fullPage: true });
+await page360
+  .getByRole('region', { name: 'Scrollable movie screenshot gallery' })
+  .scrollIntoViewIfNeeded();
+await settled(page360);
+await page360.screenshot({ path: `${out}/prototype-360-detail-gallery.png` });
+await page360.locator('#quality-options').scrollIntoViewIfNeeded();
+await settled(page360);
+await page360.screenshot({ path: `${out}/prototype-360-detail-options.png` });
+const detailMetrics = await page360.evaluate(() => {
+  const gallery = document.querySelector('[aria-label="Scrollable movie screenshot gallery"]');
+  return {
+    url: location.pathname,
+    scrollWidth: document.documentElement.scrollWidth,
+    galleryScrollHeight: gallery?.scrollHeight ?? 0,
+    galleryClientHeight: gallery?.clientHeight ?? 0,
+    relatedCards: document.querySelectorAll('[aria-label="Related movies"] article').length,
+    externalLinks: document.querySelectorAll('a[href^="http"]').length,
+  };
+});
 await context360.close();
 
 const captures = [];
@@ -115,6 +135,7 @@ const report = {
   baseURL,
   browser: 'Chromium via @sparticuz/chromium',
   primary360: metrics360,
+  detail360: detailMetrics,
   captures,
 };
 writeFileSync(`${out}/prototype-metrics.json`, JSON.stringify(report, null, 2));

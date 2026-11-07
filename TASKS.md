@@ -27,20 +27,24 @@
 - [x] Build fixture detail, not-found, loading, empty and error surfaces without live external movie actions.
 - [x] Generate original synthetic posters and optimize them to local 480×720 JPEG assets.
 - [x] Resolve Chromium execution through `@sparticuz/chromium`; record the sandbox library/flag workarounds.
-- [x] Execute Vitest unit/component tests: 16 passed.
-- [x] Execute Playwright Chromium functional/accessibility/responsive tests: 15 passed.
-- [x] Capture prototype screenshots at 360/390/768/1440 widths, drawer and detail states.
-- [x] Execute aligned primary-top visual comparison and record metrics/deviations; owner visual approval remains pending.
+- [x] Execute Vitest unit/component tests: 21 passed after detail-page additions.
+- [x] Execute Playwright Chromium functional/accessibility/responsive tests: 19 passed after detail-page additions.
+- [x] Capture prototype screenshots at 360/390/768/1440 widths, drawer, detail top/gallery/options states.
+- [x] Execute aligned primary-top and detail-top visual comparisons and record metrics/deviations; owner visual approval remains pending.
+- [x] Inspect all nine new movie-detail references and record the four-vs-nine count mismatch as BLK-012.
+- [x] Build the static movie detail page: trending carousel, title/info/chips, poster, scrollable screenshot gallery, separated quality/watch/provider placeholders, related movies and shared footer.
+- [x] Generate and optimize three original synthetic 960×540 cinematic stills for the detail gallery.
+- [x] Test homepage→detail→back navigation, detail toolbar search, detail accessibility and detail responsive overflow.
 - [x] Update context/architecture/UI/tests/changelog/bug tracker and create local Phase 2 commits `3f0120d` and `f1edf53`; no push.
 - [ ] Obtain owner approval of the prototype, contrast/safety deviations and remaining empty category states before Phase 3.
 
 ## Immediate owner inputs
 
-1. Approve or request changes to the Phase 2 visual match using `.artifacts/phase2/comparison-primary-top.png` and the live preview.
+1. Approve or request changes to the Phase 2 homepage and movie-detail visual match using `.artifacts/phase2/comparison-primary-top.png`, `.artifacts/phase2/comparison-detail-top.png` and the live preview.
 2. Accept or amend the documented safety/accessibility deviations: AZmovies branding, synthetic posters, inert Telegram/app/footer controls, “How To Watch?” wording and darkened AA pill colors.
 3. Optionally supply the missing third MOVIES4U screenshot; the received primary MOVIES4U set contains two files, not three.
 4. Before Phase 3: provision approved PostgreSQL, confirm admin owner/MFA/recovery custody and confirm authorized destination/content policy.
-5. Before Phase 4/5: supply official Telegram URL, authorized external-link inventory and metadata permission/provider decision.
+5. Before Phase 4/5: supply official Telegram URL, authorized external-link inventory (including detail quality/watch provider URLs) and metadata permission/provider decision.
 
 ## Phase 3 — persistence/admin/auth
 

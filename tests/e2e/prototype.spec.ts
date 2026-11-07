@@ -56,17 +56,70 @@ test('drawer is keyboard operable and returns focus', async ({ page }) => {
   await expect(menu).toBeFocused();
 });
 
-test('fixture detail navigation stays internal and has no external action', async ({ page }) => {
+test('fixture detail navigation renders required sections and returns home', async ({ page }) => {
   await page.goto('/');
   await page.locator('article h3 a').first().click();
   await expect(page).toHaveURL(/\/movies\/[^/]+\/?$/);
-  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Trending movies' })).toBeVisible();
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('Fixture Preview');
+  await expect(page.getByRole('region', { name: 'Detailed movie information' })).toContainText(
+    'Director:',
+  );
+  const gallery = page.getByRole('region', { name: 'Scrollable movie screenshot gallery' });
+  await expect(gallery).toBeVisible();
+  expect(await gallery.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+  await expect(page.getByRole('region', { name: 'Quality options' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Watch options' })).toBeVisible();
   await expect(
-    page.getByText('No external movie-page action is available in Phase 2.'),
-  ).toBeVisible();
-  await page.getByRole('link', { name: 'Back to catalog' }).click();
+    page.locator('ul[aria-label="Authorized provider placeholders"] button').first(),
+  ).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.getByRole('region', { name: 'Related movies' })).toBeVisible();
+  await expect(page.getByRole('contentinfo')).toBeVisible();
+  expect(await page.locator('a[href^="http"]').count()).toBe(0);
+  await page.getByRole('link', { name: /back to catalog/i }).click();
   await expect(page).toHaveURL('/');
 });
+
+test('detail toolbar search returns to the homepage fixture search', async ({ page }) => {
+  await page.goto('/movies/the-odyssey-protocol-2');
+  const search = page.getByRole('searchbox', { name: 'Search here' });
+  await search.fill('zzzz-no-fixture');
+  await search.press('Enter');
+  await expect(page).toHaveURL(/\/\?q=zzzz-no-fixture/);
+  await expect(page.getByRole('searchbox', { name: 'Search movies, series, hindi' })).toHaveValue(
+    'zzzz-no-fixture',
+  );
+  await expect(page.getByRole('status')).toContainText('No fixture matches');
+});
+
+for (const width of [320, 768, 1440]) {
+  test(`@responsive detail ${width}px has no page overflow and keeps related grid`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/movies/the-odyssey-protocol-2');
+    const metrics = await page.evaluate(() => {
+      const grid = document.querySelector('[aria-label="Related movies"] ul');
+      const rects = Array.from(grid?.querySelectorAll(':scope > li') ?? [])
+        .slice(0, 2)
+        .map((item) => {
+          const rect = item.getBoundingClientRect();
+          return { x: rect.x, y: rect.y };
+        });
+      const [first, second] = rects;
+      return {
+        scrollWidth: document.documentElement.scrollWidth,
+        innerWidth: window.innerWidth,
+        relatedTwoColumns: Boolean(
+          first && second && Math.abs(first.y - second.y) < 1 && second.x > first.x,
+        ),
+      };
+    });
+    expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
+    expect(metrics.relatedTwoColumns).toBe(true);
+    await expect(page.getByRole('link', { name: 'AZmovies home' })).toBeVisible();
+  });
+}
 
 test('static boundary: no catalog API or external movie links are exposed', async ({ page }) => {
   const response = await page.goto('/api/movies');
@@ -107,6 +160,7 @@ for (const width of widths) {
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
+    await page.locator('article h3 a').first().waitFor();
     const metrics = await page.evaluate(() => {
       const grid = document.querySelector('[aria-label="Latest releases"] ul');
       const style = grid ? getComputedStyle(grid) : null;

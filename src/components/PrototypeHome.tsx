@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Header } from '@/components/layout/Header';
 import { SearchBar } from '@/components/layout/SearchBar';
 import { CategoryButtons } from '@/components/layout/CategoryButtons';
@@ -24,8 +25,18 @@ const drawerCategoryMap: Record<string, string | null> = {
 };
 
 export function PrototypeHome() {
-  const [query, setQuery] = useState('');
-  const [searchDraft, setSearchDraft] = useState('');
+  const searchParams = useSearchParams();
+  const initialQuery = (searchParams?.get('q') ?? '').slice(0, 80);
+  return <PrototypeHomeContent initialQuery={initialQuery} />;
+}
+
+interface PrototypeHomeContentProps {
+  initialQuery?: string;
+}
+
+export function PrototypeHomeContent({ initialQuery = '' }: PrototypeHomeContentProps) {
+  const [query, setQuery] = useState(initialQuery);
+  const [searchDraft, setSearchDraft] = useState(initialQuery);
   const [category, setCategory] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [drawerOpen, setDrawerOpen] = useState(false);

@@ -24,10 +24,12 @@ const primaryTop = 'Screenshot_20261107_220156.jpg';
 const primaryGrid = 'Screenshot_20261107_220213.jpg';
 const drawer = 'Screenshot_20261107_220137.jpg';
 const pagination = 'Screenshot_20261107_220132.jpg';
+const detailTop = 'detail-Screenshot_20261107_232018.jpg';
+const detailLinks = 'detail-Screenshot_20261107_232041.jpg';
 
 const report = {
   capturedAt: new Date().toISOString(),
-  note: 'Samples are averaged 7x7 JPEG regions from owner-supplied references. They are observations, not exact source CSS. Browser chrome is excluded from prototype comparison crops.',
+  note: 'Samples are averaged JPEG regions from owner-supplied references (7x7 for flat areas, 1x1 for thin text/rules). They are observations, not exact source CSS. Browser chrome is excluded from prototype comparison crops.',
   files: {},
   samples: {
     primaryTop: {
@@ -59,6 +61,16 @@ const report = {
       inactiveBackground: await sample(pagination, 250, 1520),
       footerBackground: await sample(pagination, 100, 1900),
     },
+    detail: {
+      pageBackground: await sample(detailTop, 20, 1100),
+      titlePanel: await sample(detailTop, 100, 1700),
+      dateChip: await sample(detailTop, 100, 2030),
+      genreChip: await sample(detailTop, 500, 2030),
+      linkBlue: await sample(detailLinks, 329, 689, 1),
+      redHeading: await sample(detailLinks, 302, 536, 1),
+      rule: await sample(detailLinks, 251, 350, 1),
+      mutedText: await sample(detailLinks, 494, 356, 1),
+    },
   },
   geometryEstimatesCssPxAt360: {
     referenceDprAssumption: 3,
@@ -76,7 +88,7 @@ const report = {
   },
 };
 
-for (const file of [primaryTop, primaryGrid, drawer, pagination]) {
+for (const file of [primaryTop, primaryGrid, drawer, pagination, detailTop, detailLinks]) {
   const meta = await sharp(`docs/references/${file}`).metadata();
   report.files[file] = { width: meta.width, height: meta.height };
 }
@@ -89,6 +101,11 @@ await sharp(`docs/references/${primaryGrid}`)
   .extract({ left: 0, top: 117, width: 1080, height: 2283 })
   .png()
   .toFile(`${out}/reference-primary-grid.png`);
+
+await sharp(`docs/references/${detailTop}`)
+  .extract({ left: 0, top: 160, width: 1080, height: 2166 })
+  .png()
+  .toFile(`${out}/reference-detail-top.png`);
 
 writeFileSync(`${out}/reference-analysis.json`, JSON.stringify(report, null, 2));
 console.log(JSON.stringify(report.samples, null, 2));

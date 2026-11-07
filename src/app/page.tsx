@@ -1,5 +1,10 @@
-import { PrototypeHome } from '@/components/PrototypeHome';
+import { Suspense } from 'react';
+import { PrototypeHome, PrototypeHomeContent } from '@/components/PrototypeHome';
 
 export default function HomePage() {
-  return <PrototypeHome />;
+  return (
+    <Suspense fallback={<PrototypeHomeContent initialQuery="" />}>
+      <PrototypeHome />
+    </Suspense>
+  );
 }

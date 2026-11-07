@@ -3,7 +3,7 @@
 **Date:** 2026-11-07
 **Branch:** `arena/9177d6f3-azmovies`
 **Implementation commits:** `3f0120d12f9066ae5a8db6c273aa3f614a5ee474`, `f1edf53404f9104e5fbcb28db4cbc0773078d802`
-**Status:** completed locally; **awaiting owner visual approval before Phase 3**. No GitHub push performed.
+**Status:** homepage and movie-detail prototype completed locally; **awaiting owner visual approval before Phase 3**. No GitHub push performed.
 
 ## 1. Delivered scope
 
@@ -102,6 +102,58 @@ Chromium required two sandbox workarounds: extract the bundled AL2023 NSS/NSPR l
 - Lighthouse/Core Web Vitals, 10k-catalog performance, database/auth/API/security integration and live metadata: not run and out of Phase 2 scope.
 - PostgreSQL, authorized destination inventory, official Telegram URL, admin recovery/MFA and metadata permission remain open blockers for later phases.
 
-## 7. Approval request
+## 7. Movie Detail Page (Page 2) addendum
 
-Review the live preview and `.artifacts/phase2/comparison-primary-top.png`. Approve Phase 2 as-is, request specific visual changes, or approve the listed deviations before Phase 3 begins. The agent will stop here and wait for that decision.
+A separate static fixture detail page is now reachable by clicking a homepage poster/title. It reuses the shared header, drawer, footer and Telegram treatment, and matches the supplied HDHub4u detail references as closely as the static/safety constraints allow.
+
+### Delivered detail sections
+
+- Trending movie poster carousel.
+- Secondary toolbar with menu, yellow 4K placeholder and search that returns to homepage fixture search.
+- Safe static-fixture notice panel replacing the reference fake-domain/WhatsApp warning.
+- Title panel, blue date chip, white genre chips, italic description and large centered poster.
+- Centered info block: rating, genre, cast, director, language and quality.
+- Scrollable screenshot gallery using three original synthetic 960×540 stills.
+- Clearly separated **Quality options**, **Watch options** and **Authorized provider links**. All are `aria-disabled` placeholders with no external `href`.
+- Trailer placeholder, storyline/review/reaction placeholders, related movie grid and shared footer.
+
+### Detail reference inspection
+
+Nine detail files were received although the request described four: eight 1080×2400 crops and one 1080×24313 full-page capture. All were inspected and mapped in `docs/references/README.md`; the mismatch is BLK-012.
+
+### Detail tokens and metrics
+
+| Token/region    | Reference sample | Implementation | Note                   |
+| --------------- | ---------------- | -------------- | ---------------------- |
+| Page background | `#000000`        | `#000000`      | Matched                |
+| Title panel     | `#141414`        | `#141414`      | Matched                |
+| Date chip       | `#1f88fc`        | `#0073ec`      | AA white-text contrast |
+| Link blue       | `#0084eb`        | `#0084eb`      | Matched                |
+| Red highlight   | `#fe0000`        | `#ff6b6b`      | AA-safe red on black   |
+| Rule            | `#373737`        | `#373737`      | Matched                |
+| Muted text      | `#c3c3c3`        | `#c3c3c3`      | Matched                |
+
+Measured detail metrics at 360 CSS px / DPR 3: document `scrollWidth` 360; gallery `scrollHeight` 558 vs `clientHeight` 420 (scrollable); related cards 4; external links 0. Artifacts: `.artifacts/phase2/prototype-360-detail-top.png`, `prototype-360-detail-gallery.png`, `prototype-360-detail-options.png`, `comparison-detail-top.png`.
+
+### Detail executed checks
+
+| Command                                                | Result                             | Evidence                                                                                                                     |
+| ------------------------------------------------------ | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test`                                         | 21 passed                          | Vitest unit/component files, including detail fixtures/components                                                            |
+| `npm run build`                                        | Pass                               | 51 static pages; homepage static HTML preserved                                                                              |
+| `npm run test:e2e`                                     | 19 passed                          | `.artifacts/phase2/playwright-results.json`; homepage→detail→back, detail search, detail axe, detail responsive 320/768/1440 |
+| `npm run capture:prototype` / `npm run compare:visual` | Executed                           | Detail captures and `comparison-detail-top.png`                                                                              |
+| `npm run verify:static`                                | Pass                               | 25 source files; runtime deps only next/react/react-dom                                                                      |
+| `npm audit --omit=dev`                                 | 0 reported runtime vulnerabilities | `.artifacts/phase2/npm-audit.json`                                                                                           |
+
+### Detail deviations requiring owner acceptance
+
+1. Reference fake-domain warning, WhatsApp promo, betting ads, comments and unauthorized download links are not replicated; safe placeholder sections replace them.
+2. Quality/watch/provider/trailer controls are placeholders only; direct external redirection remains disabled until authorized URLs are supplied.
+3. Detail stills are original synthetic assets, not copyrighted film screenshots.
+4. Red/date-chip colors are minimally adjusted for AA contrast; icons are inline SVG because reference emoji/icon assets were not supplied.
+5. Shared AZmovies header/footer replace HDHub4u branding.
+
+## 8. Approval request
+
+Review the live preview, `.artifacts/phase2/comparison-primary-top.png` and `.artifacts/phase2/comparison-detail-top.png`. Approve Phase 2 homepage and movie-detail work as-is, request specific visual changes, or approve the listed deviations before Phase 3 begins. The agent will stop here and wait for that decision.

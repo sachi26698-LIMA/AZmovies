@@ -2,6 +2,40 @@
 
 All notable completed project changes are recorded here. This is a phase-controlled project, not a claim of released software versions. Dates use YYYY-MM-DD.
 
+## [Unreleased] — 2026-11-07 — Phase 2 movie detail page
+
+### Added
+
+- Static movie detail prototype for all 48 fixture slugs: trending poster carousel, secondary toolbar, title panel, date/genre chips, detailed info block, large poster, scrollable screenshot gallery, separated quality/watch/provider placeholders, trailer placeholder, storyline/review/reaction placeholders, related movies and shared footer.
+- Three original synthetic 960×540 cinematic stills under `public/stills/` for the detail gallery.
+- Detail fixture helper, detail CSS Module, SVG detail icons, detail component/unit tests and detail Playwright navigation/search/accessibility/responsive tests.
+- Nine owner-supplied detail references inspected and mapped in `docs/references/README.md`; detail-top visual comparison artifact.
+
+### Changed
+
+- Homepage remains static and reference-matched; it now accepts a `q` search query from the detail toolbar while preserving static pre-rendered catalog HTML through a Suspense fallback content component.
+- Detail external actions are authorized-link placeholders only (`aria-disabled`, no `href`); no fake-domain warning, WhatsApp promo, betting ad or unauthorized download destination was copied.
+- Test totals updated to 21 Vitest and 19 Chromium Playwright tests; static build remains 51 pages.
+
+### Verified on 2026-11-07
+
+- `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run verify:static`: passed.
+- `npm run test`: 21 Vitest tests passed.
+- `npm run build`: passed; 51 static pages generated.
+- `npm run test:e2e`: 19 Chromium tests passed, including homepage→detail→back, detail toolbar search, detail axe and detail responsive checks.
+- `npm run analyze:references`, `npm run capture:prototype`, `npm run compare:visual`: executed; detail artifacts under `.artifacts/phase2/`.
+- `npm audit --omit=dev`: 0 reported runtime vulnerabilities at execution time.
+- Local checkpoint created on `arena/9177d6f3-azmovies`; no GitHub push performed.
+
+### Not added
+
+- No live movie API, database, authentication, admin, external redirect, authorized provider URL, trailer embed, comment system or production deployment.
+- No claim of owner visual approval, Firefox/WebKit, real-device, screen-reader or Lighthouse results.
+
+### Next gate
+
+Owner must approve the homepage and movie-detail Phase 2 prototype and documented deviations before Phase 3.
+
 ## [Unreleased] — 2026-11-07 — Phase 2 static visual prototype
 
 ### Added
