@@ -35,7 +35,7 @@
 - [x] Build the static movie detail page: trending carousel, title/info/chips, poster, scrollable screenshot gallery, separated quality/watch/provider placeholders, related movies and shared footer.
 - [x] Generate and optimize three original synthetic 960×540 cinematic stills for the detail gallery.
 - [x] Test homepage→detail→back navigation, detail toolbar search, detail accessibility and detail responsive overflow.
-- [x] Update context/architecture/UI/tests/changelog/bug tracker and create local Phase 2 commits `3f0120d` and `f1edf53`; no push.
+- [x] Update context/architecture/UI/tests/changelog/bug tracker and create local Phase 2 commits `3f0120d`, `f1edf53` and detail checkpoint `39f1262`; no push.
 - [ ] Obtain owner approval of the prototype, contrast/safety deviations and remaining empty category states before Phase 3.
 
 ## Immediate owner inputs

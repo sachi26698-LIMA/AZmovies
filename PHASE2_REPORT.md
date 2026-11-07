@@ -2,7 +2,7 @@
 
 **Date:** 2026-11-07
 **Branch:** `arena/9177d6f3-azmovies`
-**Implementation commits:** `3f0120d12f9066ae5a8db6c273aa3f614a5ee474`, `f1edf53404f9104e5fbcb28db4cbc0773078d802`
+**Implementation commits:** homepage `3f0120d12f9066ae5a8db6c273aa3f614a5ee474`, `f1edf53404f9104e5fbcb28db4cbc0773078d802`; movie detail `39f126225307a402f6c1cd999e54595615223610`
 **Status:** homepage and movie-detail prototype completed locally; **awaiting owner visual approval before Phase 3**. No GitHub push performed.
 
 ## 1. Delivered scope

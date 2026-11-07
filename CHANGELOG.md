@@ -25,7 +25,7 @@ All notable completed project changes are recorded here. This is a phase-control
 - `npm run test:e2e`: 19 Chromium tests passed, including homepage→detail→back, detail toolbar search, detail axe and detail responsive checks.
 - `npm run analyze:references`, `npm run capture:prototype`, `npm run compare:visual`: executed; detail artifacts under `.artifacts/phase2/`.
 - `npm audit --omit=dev`: 0 reported runtime vulnerabilities at execution time.
-- Local checkpoint created on `arena/9177d6f3-azmovies`; no GitHub push performed.
+- Local detail checkpoint `39f126225307a402f6c1cd999e54595615223610` created on `arena/9177d6f3-azmovies`; no GitHub push performed.
 
 ### Not added
 
