@@ -22,7 +22,7 @@ export const SPECIAL_BUTTONS = [
 ] as const;
 
 export const CATEGORY_ROWS = [
-  ['18+', 'BANGLALI', 'BOLLYWOOD'],
+  ['18+', 'BANGALI', 'BOLLYWOOD'],
   ['CHINESE', 'DUAL AUDIO', 'ENGLISH'],
   ['GUJARATI', 'HINDI', 'HOLLYWOOD'],
   ['KANNADA', 'KOREAN', 'MALAYALAM'],
