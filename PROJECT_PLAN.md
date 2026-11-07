@@ -16,7 +16,7 @@ A released AZmovies must provide:
 - Only reviewed, authorized external movie-information/watch-provider pages; no unauthorized downloads.
 - Executed test evidence, documented security controls, acceptable measured performance and recoverable operations.
 
-## Phase 1 — Foundation (delivered, approval pending)
+## Phase 1 — Foundation (delivered; Phase 2 approved)
 
 **Included:** inspect repository/tools/network/GitHub; recommend architecture; establish all 15 brain documents; prepare ignore/environment/runtime files; define roadmap, UI procedure, test matrix, risks and gates.
 
@@ -26,9 +26,12 @@ A released AZmovies must provide:
 
 ## Phase 2 — Toolchain and reference-faithful visual shell
 
+**Status:** delivered locally on 2026-11-07; scoped tests/captures/comparison executed; owner visual approval pending before Phase 3.
+
 **Entry:** Q-01/Q-02/Q-03 sufficiently resolved; screenshots available for meaningful visual sign-off. If not, the owner may approve only nonvisual tooling setup, not final UI fidelity.
 
 **Work:**
+
 1. Inspect any new files, initialize the chosen Next.js/TypeScript toolchain and commit a resolved npm lockfile.
 2. Establish strict lint/type/test scripts, CSS tokens, fixture types and accessible primitives.
 3. Build only the specified header, search presentation, category strip, two-column cards, sidebar, pagination presentation, footer and configured Telegram-link treatment.
@@ -43,6 +46,7 @@ A released AZmovies must provide:
 **Entry:** Phase 2 approved; PostgreSQL test/staging access and admin ownership/recovery agreed.
 
 **Work:**
+
 1. Generate and review Drizzle migrations for catalog/taxonomy/authorization/audit and Better Auth schemas.
 2. Add controlled admin bootstrap; disable public registration; enforce server-side admin authorization.
 3. Implement session expiry/revocation, CSRF/origin protections, persistent rate limiting and MFA enrollment/recovery.
@@ -57,6 +61,7 @@ A released AZmovies must provide:
 **Entry:** stable schema/admin content workflow and at least safely authorized test destinations.
 
 **Work:**
+
 1. Connect server-rendered home/category/search/detail pages to persisted published records.
 2. Implement bounded search, combined filters, stable numeric pagination and URL state.
 3. Implement the opaque redirect route with fresh destination/approval checks and safe failure behavior.
@@ -70,6 +75,7 @@ A released AZmovies must provide:
 **Entry:** provider permission/licence confirmed, server credential supplied through secret storage, application egress verified, Phase 4 catalog secure.
 
 **Work:**
+
 1. Implement the provider adapter with strict response validation, bounded requests, rate-limit handling and sanitized errors.
 2. Add admin metadata search/preview/import and refresh jobs for existing movies.
 3. Preserve editorial overrides; map genres/language accurately; never infer dubbed languages or source quality.
@@ -96,22 +102,22 @@ A released AZmovies must provide:
 
 ## Dependency and risk register
 
-| ID | Risk/dependency | Impact | Mitigation / owner action | Gate |
-| --- | --- | --- | --- | --- |
-| R-01 | Screenshots absent from checkout | Cannot verify exact visual fidelity | Attach references; record dimensions and states | 2 |
-| R-02 | TMDB commercial/permission requirements | Live integration may be impermissible | Confirm current terms and appropriate agreement; provider remains optional | 5 |
-| R-03 | No authorized movie-page inventory | Cannot safely populate redirects | Owner supplies provider/path evidence; default deny | 4 |
-| R-04 | No local DB server or Docker | Real integration tests blocked | Provision approved PostgreSQL test/staging environment; do not silently switch engines | 3 |
-| R-05 | Browser CDN probe failed; no browsers installed | Responsive/cross-browser execution blocked | Approved browser mirror or CI runner with verified downloads | 2/6 |
-| R-06 | Latest package metadata is not compatibility proof | Install/build/type failures | Resolve one lockfile; run smoke checks; record exact versions | 2 |
-| R-07 | Preview/production proxy and cookie origins differ | Login failures or CSRF/trust bypass | Exact origin allowlist; verified proxy header handling; test both contexts | 3/7 |
-| R-08 | Public GitHub repository | Accidental secret/content disclosure | Ignore env/data/reports; pre-commit diff/secret review; no credentials in chat | Every phase |
-| R-09 | Original language ≠ dubbed language; quality not supplied by metadata APIs | Misleading cards | Separate editorial language/quality fields; unknown fallback | 3/4 |
-| R-10 | Poster/brand rights | Copyright/trademark exposure | Use permitted assets; no copied MOVIES4U branding/code; record sources | 2/5 |
-| R-11 | Large catalog/search and poster payload | Slow pages/database | 10k fixture benchmark; bounded pagination; indexed queries; responsive images | 6 |
-| R-12 | Admin lockout/recovery without mail provider | Operational loss of access | Owner-held authenticator/recovery codes; controlled offline reset runbook | 3/7 |
-| R-13 | Approved destination changes later | Unsafe/stale outbound link | Revalidate on click, revoke controls, scheduled review where permitted | 4/7 |
-| R-14 | Shared 2-CPU/3.8-GiB workspace | Misleading load results or resource exhaustion | Low test concurrency; label local results; repeat benchmarks in staging | 6 |
+| ID   | Risk/dependency                                                            | Impact                                         | Mitigation / owner action                                                              | Gate        |
+| ---- | -------------------------------------------------------------------------- | ---------------------------------------------- | -------------------------------------------------------------------------------------- | ----------- |
+| R-01 | Screenshots absent from checkout                                           | Cannot verify exact visual fidelity            | Attach references; record dimensions and states                                        | 2           |
+| R-02 | TMDB commercial/permission requirements                                    | Live integration may be impermissible          | Confirm current terms and appropriate agreement; provider remains optional             | 5           |
+| R-03 | No authorized movie-page inventory                                         | Cannot safely populate redirects               | Owner supplies provider/path evidence; default deny                                    | 4           |
+| R-04 | No local DB server or Docker                                               | Real integration tests blocked                 | Provision approved PostgreSQL test/staging environment; do not silently switch engines | 3           |
+| R-05 | Browser CDN probe failed; no browsers installed                            | Responsive/cross-browser execution blocked     | Approved browser mirror or CI runner with verified downloads                           | 2/6         |
+| R-06 | Latest package metadata is not compatibility proof                         | Install/build/type failures                    | Resolve one lockfile; run smoke checks; record exact versions                          | 2           |
+| R-07 | Preview/production proxy and cookie origins differ                         | Login failures or CSRF/trust bypass            | Exact origin allowlist; verified proxy header handling; test both contexts             | 3/7         |
+| R-08 | Public GitHub repository                                                   | Accidental secret/content disclosure           | Ignore env/data/reports; pre-commit diff/secret review; no credentials in chat         | Every phase |
+| R-09 | Original language ≠ dubbed language; quality not supplied by metadata APIs | Misleading cards                               | Separate editorial language/quality fields; unknown fallback                           | 3/4         |
+| R-10 | Poster/brand rights                                                        | Copyright/trademark exposure                   | Use permitted assets; no copied MOVIES4U branding/code; record sources                 | 2/5         |
+| R-11 | Large catalog/search and poster payload                                    | Slow pages/database                            | 10k fixture benchmark; bounded pagination; indexed queries; responsive images          | 6           |
+| R-12 | Admin lockout/recovery without mail provider                               | Operational loss of access                     | Owner-held authenticator/recovery codes; controlled offline reset runbook              | 3/7         |
+| R-13 | Approved destination changes later                                         | Unsafe/stale outbound link                     | Revalidate on click, revoke controls, scheduled review where permitted                 | 4/7         |
+| R-14 | Shared 2-CPU/3.8-GiB workspace                                             | Misleading load results or resource exhaustion | Low test concurrency; label local results; repeat benchmarks in staging                | 6           |
 
 ## Change control and reporting
 

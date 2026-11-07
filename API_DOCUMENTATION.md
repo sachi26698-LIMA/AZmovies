@@ -1,6 +1,6 @@
 # AZmovies — Planned API Contract
 
-**Status:** specification only. No endpoint below is implemented or tested. Final route files and DTO schemas must match this document when introduced. Examples are synthetic, not live movie/provider data.
+**Status:** specification only. No endpoint below is implemented. Phase 2 static-boundary testing verified that `/api/movies` returns 404 and the prototype exposes no catalog API or external movie links. Final route files and DTO schemas must match this document when introduced. Examples are synthetic, not live movie/provider data.
 
 ## 1. General conventions
 
@@ -31,16 +31,16 @@ Do not return stack traces, SQL, provider bodies, password validity details or s
 
 Query parameters:
 
-| Name | Contract |
-| --- | --- |
-| q | Optional trimmed title search, max 80 chars |
-| category | Optional active category slug |
+| Name     | Contract                                                                                            |
+| -------- | --------------------------------------------------------------------------------------------------- |
+| q        | Optional trimmed title search, max 80 chars                                                         |
+| category | Optional active category slug                                                                       |
 | language | Optional supported language code; verified display language unless owner approves another semantics |
-| year | Optional integer within agreed release-year range |
-| quality | Optional allowlisted quality label |
-| sort | `recent` default, `title`, `year_desc`; fixed server mapping |
-| page | Positive integer, default 1; bounded after catalog-size review |
-| pageSize | Default 24, max 50; reference may change default before approval |
+| year     | Optional integer within agreed release-year range                                                   |
+| quality  | Optional allowlisted quality label                                                                  |
+| sort     | `recent` default, `title`, `year_desc`; fixed server mapping                                        |
+| page     | Positive integer, default 1; bounded after catalog-size review                                      |
+| pageSize | Default 24, max 50; reference may change default before approval                                    |
 
 Filters combine with AND. Empty/missing optional values are equivalent. Invalid values return a validation error rather than an unbounded query. Stable recent order is `published_at DESC, id DESC`; other sorts include an ID tie-breaker.
 
@@ -61,7 +61,14 @@ Synthetic response:
     }
   ],
   "pagination": { "page": 1, "pageSize": 24, "totalItems": 1, "totalPages": 1 },
-  "filters": { "q": null, "category": null, "language": null, "year": null, "quality": null, "sort": "recent" }
+  "filters": {
+    "q": null,
+    "category": null,
+    "language": null,
+    "year": null,
+    "quality": null,
+    "sort": "recent"
+  }
 }
 ```
 
@@ -98,15 +105,15 @@ The UI may open this route in a new tab with `noopener noreferrer` and an access
 
 Mounted by Better Auth under `/api/auth/*`; exact enabled paths are generated from the pinned configuration. Do not create a parallel custom login/session API.
 
-| Endpoint | Planned policy |
-| --- | --- |
-| `POST /api/auth/sign-in/email` | Email/password; generic failure; persistent rate limit; MFA challenge when enrolled/required |
+| Endpoint                                            | Planned policy                                                                                   |
+| --------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `POST /api/auth/sign-in/email`                      | Email/password; generic failure; persistent rate limit; MFA challenge when enrolled/required     |
 | Better Auth two-factor challenge/verification paths | Required for enrolled admin; exact library contract recorded after installation; no bypass route |
-| `POST /api/auth/sign-out` | Revoke current session and clear cookie |
-| `GET /api/auth/get-session` | Minimal current session; no credential fields; private/no-store |
-| `POST /api/auth/change-password` | Authenticated, fresh-session requirements, current password, revoke other sessions |
-| `POST /api/auth/sign-up/email` | Disabled; must not create a user regardless of supplied role |
-| Social login/public reset/verification routes | Not enabled without an approved provider/recovery design |
+| `POST /api/auth/sign-out`                           | Revoke current session and clear cookie                                                          |
+| `GET /api/auth/get-session`                         | Minimal current session; no credential fields; private/no-store                                  |
+| `POST /api/auth/change-password`                    | Authenticated, fresh-session requirements, current password, revoke other sessions               |
+| `POST /api/auth/sign-up/email`                      | Disabled; must not create a user regardless of supplied role                                     |
+| Social login/public reset/verification routes       | Not enabled without an approved provider/recovery design                                         |
 
 Admin bootstrap and emergency recovery are controlled server commands, not public endpoints. Password policy proposed: 12–128 characters, no composition theater, library-managed slow hash. Session proposed: 8-hour absolute expiry, no remember-me extension, secure HTTP-only cookie. Library endpoints and cookie/CSRF behavior require actual HTTP tests.
 
@@ -114,24 +121,24 @@ Admin bootstrap and emergency recovery are controlled server commands, not publi
 
 All routes below require admin authorization and write-origin protection. Lists are bounded/paginated; no unlimited export.
 
-| Method/path | Purpose | Important rules |
-| --- | --- | --- |
-| `GET /api/admin/movies` | Search draft/published/archived editorial records | Explicit status filter; private no-store |
-| `POST /api/admin/movies` | Create manual draft | Server sets creator/status/version; no supplied approval/role fields |
-| `GET /api/admin/movies/{id}` | Editorial detail | Include provenance/locks; exclude unrelated auth secrets |
-| `PATCH /api/admin/movies/{id}` | Edit metadata/taxonomy | `If-Match` version required; 428 if absent, 409 if stale; cannot approve links implicitly |
-| `POST /api/admin/movies/{id}/publish` | Publish valid draft | Transactionally validate required fields; set server publish time; invalidate public cache |
-| `POST /api/admin/movies/{id}/archive` | Remove from public catalog | Preserve record/audit; immediate public-cache invalidation |
-| `GET/POST /api/admin/categories` | List/create taxonomy | Unique slug; audited changes |
-| `PATCH /api/admin/categories/{id}` | Rename/reorder/deactivate | No destructive deletion of referenced history by default |
-| `GET/POST /api/admin/languages` | Manage supported display vocabulary | Valid codes/labels; no inferred dubbing |
-| `GET/POST /api/admin/destinations` | Review exact outbound destination policy | Evidence required; inactive on creation |
-| `PATCH /api/admin/destinations/{id}` | Edit/activate/deactivate policy | Versioned audited action; deactivation affects clicks immediately |
-| `GET/POST /api/admin/movies/{id}/links` | List/submit external-page link | New links pending; canonical target must match destination policy |
-| `PATCH /api/admin/links/{id}` | Edit link metadata/target | Material target change clears approval and returns to pending |
-| `POST /api/admin/links/{id}/approve` | Approve submitted link | Evidence, exact policy and fresh admin session required; record approver/time |
-| `POST /api/admin/links/{id}/revoke` | Revoke link | Immediate denial; reason/audit required |
-| `GET /api/admin/audit-logs` | Bounded security/editorial history | Redacted fields only; admin-only |
+| Method/path                             | Purpose                                           | Important rules                                                                            |
+| --------------------------------------- | ------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `GET /api/admin/movies`                 | Search draft/published/archived editorial records | Explicit status filter; private no-store                                                   |
+| `POST /api/admin/movies`                | Create manual draft                               | Server sets creator/status/version; no supplied approval/role fields                       |
+| `GET /api/admin/movies/{id}`            | Editorial detail                                  | Include provenance/locks; exclude unrelated auth secrets                                   |
+| `PATCH /api/admin/movies/{id}`          | Edit metadata/taxonomy                            | `If-Match` version required; 428 if absent, 409 if stale; cannot approve links implicitly  |
+| `POST /api/admin/movies/{id}/publish`   | Publish valid draft                               | Transactionally validate required fields; set server publish time; invalidate public cache |
+| `POST /api/admin/movies/{id}/archive`   | Remove from public catalog                        | Preserve record/audit; immediate public-cache invalidation                                 |
+| `GET/POST /api/admin/categories`        | List/create taxonomy                              | Unique slug; audited changes                                                               |
+| `PATCH /api/admin/categories/{id}`      | Rename/reorder/deactivate                         | No destructive deletion of referenced history by default                                   |
+| `GET/POST /api/admin/languages`         | Manage supported display vocabulary               | Valid codes/labels; no inferred dubbing                                                    |
+| `GET/POST /api/admin/destinations`      | Review exact outbound destination policy          | Evidence required; inactive on creation                                                    |
+| `PATCH /api/admin/destinations/{id}`    | Edit/activate/deactivate policy                   | Versioned audited action; deactivation affects clicks immediately                          |
+| `GET/POST /api/admin/movies/{id}/links` | List/submit external-page link                    | New links pending; canonical target must match destination policy                          |
+| `PATCH /api/admin/links/{id}`           | Edit link metadata/target                         | Material target change clears approval and returns to pending                              |
+| `POST /api/admin/links/{id}/approve`    | Approve submitted link                            | Evidence, exact policy and fresh admin session required; record approver/time              |
+| `POST /api/admin/links/{id}/revoke`     | Revoke link                                       | Immediate denial; reason/audit required                                                    |
+| `GET /api/admin/audit-logs`             | Bounded security/editorial history                | Redacted fields only; admin-only                                                           |
 
 Movie create/edit DTO includes title, optional original title/synopsis/release date/year, language/category assignments, optional quality/poster fields and editorial locks. Server-owned fields (creator, status, publication time, provider sync time, approval) cannot be mass-assigned.
 
@@ -155,13 +162,13 @@ A create returns 201 with the draft DTO and version/ETag. A stale update must no
 
 These routes remain disabled until provider permission and credentials are confirmed.
 
-| Method/path | Purpose |
-| --- | --- |
-| `POST /api/admin/metadata/preview` | Validated provider ID/title query; normalized temporary result, no persistence |
-| `POST /api/admin/metadata/import` | Create/idempotently reuse import job; imported movie is draft |
-| `POST /api/admin/movies/{id}/refresh` | Queue refresh respecting editorial locks |
-| `GET /api/admin/import-jobs` | Paginated job status |
-| `GET /api/admin/import-jobs/{id}` | Sanitized job result/error code |
+| Method/path                           | Purpose                                                                                              |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `POST /api/admin/metadata/preview`    | Validated provider ID/title query; normalized temporary result, no persistence                       |
+| `POST /api/admin/metadata/import`     | Create/idempotently reuse import job; imported movie is draft                                        |
+| `POST /api/admin/movies/{id}/refresh` | Queue refresh respecting editorial locks                                                             |
+| `GET /api/admin/import-jobs`          | Paginated job status                                                                                 |
+| `GET /api/admin/import-jobs/{id}`     | Sanitized job result/error code                                                                      |
 | `POST /api/internal/metadata/refresh` | Optional host-scheduler endpoint, authenticated with a dedicated server secret; not browser-callable |
 
 Provider selection is fixed by server configuration, not an arbitrary base URL/token supplied by the client. Bound query length/result count/job concurrency. Use 202 for accepted jobs. Duplicate active requests return the existing job where appropriate. Provider failures never auto-publish, alter locks or authorize redirects.

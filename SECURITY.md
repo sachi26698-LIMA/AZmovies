@@ -1,5 +1,7 @@
 # AZmovies — Security and Content Authorization
 
+**Phase 2 status:** static fixture prototype only. `npm run verify:static` passed; no API/database/auth/external redirect is implemented; Telegram/app/footer controls are inert; pages are marked noindex. Runtime `npm audit --omit=dev` reported 0 vulnerabilities at execution time. Production headers, auth, CSRF, redirect policy and secret-scanning gates below remain future requirements, not completed production claims.
+
 **Status:** required design controls, not implemented or audited. No production security claim is made in Phase 1. The GitHub repository is public; protect credentials and private content accordingly.
 
 ## 1. Assets and trust boundaries

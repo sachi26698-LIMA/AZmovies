@@ -8,20 +8,20 @@ Allowed statuses: **Not run**, **Blocked**, **Pass**, **Fail**, **Not applicable
 
 ## 2. Test layers and tools
 
-| Layer | Tool/environment | AZmovies focus |
-| --- | --- | --- |
-| Static | Prettier, ESLint, strict TypeScript, dependency/secret review | Type/DTO boundaries, server-only imports, formatting and unsafe patterns |
-| Component | Vitest + Testing Library + jsdom | Header/search/categories/cards/sidebar/pagination/footer/Telegram and admin forms |
-| Unit | Vitest | URL policy, metadata mapping, filter parsing, language/quality honesty, field locks |
-| API/database integration | Vitest + actual HTTP server + disposable PostgreSQL | Status/headers/DTOs, constraints, transactions, auth/roles, drafts and cache isolation |
-| Authentication | Real Better Auth handler + PostgreSQL + browser flow | Login/MFA/sessions/cookies/CSRF/revocation/rate limits/closed signup |
-| Functional E2E | Playwright | Browse→search→filter→detail→approved external-page action; admin create→review→publish→archive |
-| Responsive/visual | Playwright screenshots at documented viewports | Two-column reference geometry, sidebar/header/footer states, overflow and zoom |
-| Cross-browser | Playwright Chromium/Firefox/WebKit; real devices when available | Engine differences plus honest mobile-device coverage |
-| Accessibility | axe + keyboard/zoom/manual assistive checks | Labels/focus/announcements/contrast/reflow and unobscured controls |
-| Security | Negative HTTP/E2E corpus, header/cookie inspection, scanners | Redirects, authz, injection, CSRF, secrets, private cache leakage |
-| Performance | Lighthouse CI, HTTP timings, EXPLAIN/fixture load | Poster loading, Core Web Vitals targets, catalog query latency and bounded jobs |
-| Regression | CI suite + selected prior defect cases | All previously working core behavior after every change |
+| Layer                    | Tool/environment                                                | AZmovies focus                                                                                 |
+| ------------------------ | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| Static                   | Prettier, ESLint, strict TypeScript, dependency/secret review   | Type/DTO boundaries, server-only imports, formatting and unsafe patterns                       |
+| Component                | Vitest + Testing Library + jsdom                                | Header/search/categories/cards/sidebar/pagination/footer/Telegram and admin forms              |
+| Unit                     | Vitest                                                          | URL policy, metadata mapping, filter parsing, language/quality honesty, field locks            |
+| API/database integration | Vitest + actual HTTP server + disposable PostgreSQL             | Status/headers/DTOs, constraints, transactions, auth/roles, drafts and cache isolation         |
+| Authentication           | Real Better Auth handler + PostgreSQL + browser flow            | Login/MFA/sessions/cookies/CSRF/revocation/rate limits/closed signup                           |
+| Functional E2E           | Playwright                                                      | Browse→search→filter→detail→approved external-page action; admin create→review→publish→archive |
+| Responsive/visual        | Playwright screenshots at documented viewports                  | Two-column reference geometry, sidebar/header/footer states, overflow and zoom                 |
+| Cross-browser            | Playwright Chromium/Firefox/WebKit; real devices when available | Engine differences plus honest mobile-device coverage                                          |
+| Accessibility            | axe + keyboard/zoom/manual assistive checks                     | Labels/focus/announcements/contrast/reflow and unobscured controls                             |
+| Security                 | Negative HTTP/E2E corpus, header/cookie inspection, scanners    | Redirects, authz, injection, CSRF, secrets, private cache leakage                              |
+| Performance              | Lighthouse CI, HTTP timings, EXPLAIN/fixture load               | Poster loading, Core Web Vitals targets, catalog query latency and bounded jobs                |
+| Regression               | CI suite + selected prior defect cases                          | All previously working core behavior after every change                                        |
 
 Mock external metadata responses in deterministic tests, but run a separate permitted live smoke test before claiming provider integration. WebKit automation is not a real iPhone/Safari test; label it accurately.
 
@@ -41,34 +41,26 @@ Node 22.22.3/npm/Git/GitHub CLI are present. No application dependencies, Postgr
 
 Use independent test records/transactions or a reset disposable schema per worker. With approximately 3.8 GiB RAM/2 CPUs, start with one integration/browser worker and measure before increasing concurrency. Never run seed/reset/migration-destructive scripts against production.
 
-## 4. Planned commands — not available in Phase 1
+## 4. Available commands and Phase 2 execution
 
-Phase 2 must create these scripts and verify them:
+The following scripts exist and were executed in Phase 2 unless noted:
 
-```text
-npm ci
-npm run format:check
-npm run lint
-npm run typecheck
-npm run test
-npm run test:coverage
-npm run build
-npm run dev -- --hostname 0.0.0.0
+```bash
+npm run format:check      # pass
+npm run typecheck         # pass
+npm run lint              # pass
+npm run verify:static     # pass; static fixture boundary report
+npm run test              # pass; 16 Vitest unit/component tests
+npm run build             # pass; 51 static pages
+npx playwright test       # pass; 15 Chromium functional/a11y/responsive tests
+npm run test:a11y         # available subset of Playwright @a11y tests
+npm run test:responsive   # available subset of Playwright @responsive tests
+npm run analyze:references # executed; reference samples/crops
+npm run capture:prototype  # executed; prototype screenshots/metrics
+npm run compare:visual     # executed; aligned primary-top comparison
 ```
 
-Phase 3+ adds, with environment guards:
-
-```text
-npm run test:integration
-npm run test:e2e
-npm run test:a11y
-npm run test:security
-npm run test:visual
-npm run test:performance
-npm run db:check
-```
-
-Do not paste these into a Phase 1 “passed” report. They are planned interfaces. Exact browser installation, database setup, visual update and migration commands will be documented after the toolchain/provider is selected. Avoid auto-updating visual baselines in CI.
+Playwright and capture use `@sparticuz/chromium`; the sandbox requires bundled AL2023 NSS/NSPR library extraction and omission of `--single-process`. The default target is `http://127.0.0.1:3000`; override with `PROTOTYPE_URL`. Coverage, Lighthouse, cross-browser engines, real-device, screen-reader, database/API/auth and live-provider commands remain future work and are not claimed.
 
 ## 5. Continuous integration plan
 

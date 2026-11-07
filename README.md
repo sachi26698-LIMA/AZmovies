@@ -2,66 +2,94 @@
 
 A professionally crafted movie discovery catalog and **authorized external-page redirect portal**, with a private editorial admin.
 
-> **Project status: Phase 1 — foundation only.** Documentation and repository preparation are complete; no website, API implementation, database migration or application test suite exists yet. Website implementation awaits owner approval. The referenced screenshots were not available in the checkout, so no screenshot match is claimed.
+> **Project status: Phase 2 — static fixture-based visual prototype.** The reference-matched mobile-first shell is implemented locally and scoped tests have passed. It uses synthetic fixtures only: no live movie API, database, authentication, external redirect or metadata integration. Owner visual approval is required before Phase 3.
 
 ## Product boundaries
 
 AZmovies is not a hosting, streaming or download service. It must never distribute or link to unauthorized copyrighted movie downloads. External movie links require explicit authorization and validation. The brand is AZmovies; MOVIES4U is a visual reference only.
 
-Planned public interface:
+Current prototype interface:
 
-- Compact dark header and branding, search and horizontal category navigation.
-- Two-column movie poster grid with title, release year, language and quality.
-- Pagination, sidebar navigation, footer and an owner-configured floating Telegram link.
-- Movie detail pages, category/language filtering and responsive layouts.
+- Compact dark header, AZmovies branding, labeled search and category buttons.
+- Two-column movie poster grid with synthetic title/year/language/quality metadata.
+- Local fixture search/category filtering, pagination, side drawer, footer and inert Telegram treatment.
+- Static fixture detail pages and honest loading/empty/error/not-found surfaces.
 
-Planned private interface:
+Planned later interfaces remain private admin, manual catalog management, authorized destination review and optional permitted metadata import.
 
-- Secure admin login with closed registration and MFA.
-- Manual movie/category management and draft/review/publish workflow.
-- Authorized destination/link review.
-- Optional permitted metadata import and refresh, independent of manual operation.
+## Quickstart
+
+```bash
+npm ci
+npm run build
+npm run start -- --port 3000
+```
+
+Useful checks:
+
+```bash
+npm run format:check
+npm run typecheck
+npm run lint
+npm run verify:static
+npm run test
+npx playwright test
+npm run analyze:references
+npm run capture:prototype
+npm run compare:visual
+```
+
+The Playwright/capture scripts use `@sparticuz/chromium` and expect the prototype at `http://127.0.0.1:3000` unless `PROTOTYPE_URL` is set. Reference JPEGs are internal-only and ignored by Git; place owner-supplied files in `docs/references/` before running reference analysis.
+
+## Verified Phase 2 evidence
+
+Executed on 2026-11-07 in the sandbox:
+
+- Format/typecheck/lint/static-boundary checks passed.
+- Vitest: 16 unit/component tests passed.
+- Next.js production build passed; 51 static pages generated.
+- Playwright Chromium: 15 functional/accessibility/responsive tests passed.
+- Prototype captures and aligned primary-top comparison written to `.artifacts/phase2/`.
+- Runtime `npm audit --omit=dev`: 0 reported vulnerabilities at execution time.
+
+See [PHASE2_REPORT.md](PHASE2_REPORT.md), [TEST_CASES.md](TEST_CASES.md) and [BUG_TRACKER.md](BUG_TRACKER.md) for exact artifacts, deviations and remaining blockers. Firefox/WebKit, real devices, screen-reader smoke, Lighthouse/Core Web Vitals, database/auth/live-provider and production security tests are **not** claimed.
 
 ## Recommended foundation
 
-Next.js App Router, React and strict TypeScript; hand-authored CSS Modules; PostgreSQL with Drizzle; Better Auth; Vitest/Testing Library and Playwright/axe/Lighthouse. See [ARCHITECTURE.md](ARCHITECTURE.md) for boundaries and tradeoffs. These are proposed choices, not installed dependencies.
+Next.js App Router, React and strict TypeScript; hand-authored CSS Modules; PostgreSQL with Drizzle; Better Auth; Vitest/Testing Library and Playwright/axe/Lighthouse. See [ARCHITECTURE.md](ARCHITECTURE.md) for boundaries and tradeoffs. PostgreSQL/Drizzle/Better Auth remain future-phase proposals, not installed Phase 2 dependencies.
 
 **Metadata permission is unresolved.** TMDB is a candidate only. Its current terms can require a written commercial agreement for a traffic-driving discovery site. Live integration stays disabled until the owner confirms appropriate permission. Manual catalog functionality is the fallback.
 
-## Verified development environment
-
-Inspected on 2026-11-07: Node 22.22.3, npm 10.9.8, Git 2.39.5 and GitHub CLI 2.23.0. GitHub authentication and a read-only repository API request succeeded. No push is claimed. PostgreSQL/Docker and browser executables were not installed. Application-server probes to TMDB and the Playwright browser CDN failed; browser/live-provider testing is not yet verified.
-
-The repository started with only a short README. There is no runnable app or installation command yet. Commands listed in the testing/architecture documents are **planned scripts**, not currently available functionality.
-
 ## Project brain
 
-| Document | Purpose |
-| --- | --- |
-| [AGENTS.md](AGENTS.md) | Agent rules, scope gates and truthful reporting contract |
-| [AI_CONTEXT.md](AI_CONTEXT.md) | Verified project memory, decisions and unresolved inputs |
-| [PROJECT_PLAN.md](PROJECT_PLAN.md) | Seven-phase roadmap, dependencies and acceptance gates |
-| [ARCHITECTURE.md](ARCHITECTURE.md) | Proposed stack, modules, request/data flows and deployment |
-| [UI_GUIDELINES.md](UI_GUIDELINES.md) | Reference inventory, provisional tokens and visual matching |
-| [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md) | Proposed relational model, constraints and migration policy |
-| [API_DOCUMENTATION.md](API_DOCUMENTATION.md) | Planned HTTP contracts; nothing implemented yet |
-| [SECURITY.md](SECURITY.md) | Auth, authorization, redirect, secret and content safeguards |
-| [TESTING_STRATEGY.md](TESTING_STRATEGY.md) | Required layers, environments and evidence rules |
-| [TEST_CASES.md](TEST_CASES.md) | Traceable cases and actual execution status |
-| [BUG_TRACKER.md](BUG_TRACKER.md) | Defects and foundation blockers, not invented application bugs |
-| [PERFORMANCE.md](PERFORMANCE.md) | Budgets, image strategy and measurement procedure |
-| [CHANGELOG.md](CHANGELOG.md) | Completed, dated project changes |
-| [TASKS.md](TASKS.md) | Phase checklist and immediate approval queue |
-| README.md | Entry point and current status |
+| Document                                               | Purpose                                                      |
+| ------------------------------------------------------ | ------------------------------------------------------------ |
+| [AGENTS.md](AGENTS.md)                                 | Agent rules, scope gates and truthful reporting contract     |
+| [AI_CONTEXT.md](AI_CONTEXT.md)                         | Verified project memory, decisions and unresolved inputs     |
+| [PROJECT_PLAN.md](PROJECT_PLAN.md)                     | Seven-phase roadmap, dependencies and acceptance gates       |
+| [ARCHITECTURE.md](ARCHITECTURE.md)                     | Stack, implemented prototype modules and future boundaries   |
+| [UI_GUIDELINES.md](UI_GUIDELINES.md)                   | Reference inventory, measured tokens and visual matching     |
+| [DATABASE_SCHEMA.md](DATABASE_SCHEMA.md)               | Proposed relational model, constraints and migration policy  |
+| [API_DOCUMENTATION.md](API_DOCUMENTATION.md)           | Planned HTTP contracts; no live endpoint implemented yet     |
+| [SECURITY.md](SECURITY.md)                             | Auth, authorization, redirect, secret and content safeguards |
+| [TESTING_STRATEGY.md](TESTING_STRATEGY.md)             | Required layers, environments and evidence rules             |
+| [TEST_CASES.md](TEST_CASES.md)                         | Traceable cases and actual execution status                  |
+| [BUG_TRACKER.md](BUG_TRACKER.md)                       | Defects, resolved blockers and open delivery gates           |
+| [PERFORMANCE.md](PERFORMANCE.md)                       | Budgets, image strategy and measurement procedure            |
+| [PHASE2_REPORT.md](PHASE2_REPORT.md)                   | Phase 2 deliverable, comparison, tests and remaining issues  |
+| [CHANGELOG.md](CHANGELOG.md)                           | Completed, dated project changes                             |
+| [TASKS.md](TASKS.md)                                   | Phase checklist and immediate approval queue                 |
+| [docs/references/README.md](docs/references/README.md) | Owner-supplied reference manifest                            |
+| README.md                                              | Entry point and current status                               |
 
 ## Repository preparation
 
-- `.gitignore` excludes secrets, dependencies, builds, test artifacts and local data.
+- `.gitignore` excludes secrets, dependencies, builds, test artifacts, local data and raw reference images.
 - `.env.example` names future configuration without usable credentials.
-- `.nvmrc` records the inspected Node runtime for later setup.
+- `.nvmrc` records the inspected Node runtime.
 - Work belongs on `arena/9177d6f3-azmovies`; do not push directly to `main`.
 - The GitHub repository is public. Do not add real environment files, movie media, database dumps or credentials. A reuse licence has not been selected by the owner.
 
 ## Next action
 
-Owner review is requested for the stack, missing screenshots, two-column behavior, authorized destinations, metadata permission, admin recovery and hosting/database choices. After explicit Phase 2 approval, initialize tooling and build the reference-matched visual shell with fixtures and tests. Do not begin that work merely because this README exists.
+Owner review is requested for the Phase 2 prototype, the aligned comparison artifact and the documented safety/accessibility deviations. After explicit approval, Phase 3 may begin with approved PostgreSQL, private admin and authentication. Do not begin Phase 3 merely because this README exists.

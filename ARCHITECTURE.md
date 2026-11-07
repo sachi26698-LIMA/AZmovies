@@ -1,6 +1,6 @@
 # AZmovies — Proposed Architecture
 
-**Status:** Phase 1 design, awaiting approval. Paths/modules/contracts below are planned; no application code or infrastructure has been created.
+**Status:** Phase 2 static prototype subset implemented locally. The public fixture shell, components, styles, tests and scripts exist; server/database/auth/admin/API/redirect/metadata modules below remain planned and unimplemented.
 
 ## 1. Architecture goals
 
@@ -12,21 +12,21 @@
 
 ## 2. Stack recommendation and reasons
 
-| Layer | Proposed baseline | Why this fits AZmovies |
-| --- | --- | --- |
-| Runtime/package management | Node 22.22.3; npm 10.9.8; committed `package-lock.json` in Phase 2 | Already available; avoids introducing another package manager; Next 16.4.5 advertises Node >=20.9.0 |
-| Web application | Next.js 16.4.5 App Router + React 19.3.1 | SSR for catalog/details, file-based routes, server/client separation and one deployment for site/admin/API |
-| Language | Strict TypeScript 5.9.3 initially | Shared DTO validation/types; conservative toolchain choice while TS 7 support is verified |
-| Styling | Global CSS reset/tokens + component CSS Modules | Exact control of the dark reference; no UI-kit visual language or utility-framework requirement |
-| Database | PostgreSQL, exact hosted major pinned after provider selection | Relational taxonomy, approval records, transactions, constraints and predictable pagination |
-| Data access | Drizzle ORM 0.45.4 / Drizzle Kit 0.31.11 / Postgres.js 4.1.0 candidates | Typed queries and reviewable SQL migrations without a separate backend service |
-| Authentication | Better Auth 1.7.18, email/password + database sessions + two-factor plugin | Maintained credential/session primitives; closed signup and server-owned admin role; no custom crypto |
-| Validation | Zod 4.6.7 candidate | Validate env, query/body DTOs and provider responses at trust boundaries |
-| Images | Next Image + provider-permitted image CDN; Sharp where local optimization is needed | Responsive poster formats/sizes, reserved dimensions and controlled remote sources |
-| Component/unit/API logic | Vitest 5.1.0, Vite 8.3.6, React plugin 6.2.1, Testing Library, jsdom | Fast isolated tests; compatible engine/peer metadata observed, installation not yet tested |
-| Browser/accessibility | Playwright 1.65.0 + axe Playwright 4.14.0 candidates | Real functional, viewport, keyboard and browser-engine checks |
-| Quality | ESLint 9.39.4 with Next rules, Prettier 3.9.10, strict `tsc` | Stable lint baseline satisfying Next's >=9 peer requirement; formatting/type gates |
-| Performance | Lighthouse CI plus HTTP/database timings | Separate lab browser metrics from server/database evidence |
+| Layer                      | Proposed baseline                                                                   | Why this fits AZmovies                                                                                     |
+| -------------------------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| Runtime/package management | Node 22.22.3; npm 10.9.8; committed `package-lock.json` in Phase 2                  | Already available; avoids introducing another package manager; Next 16.4.5 advertises Node >=20.9.0        |
+| Web application            | Next.js 16.4.5 App Router + React 19.3.1                                            | SSR for catalog/details, file-based routes, server/client separation and one deployment for site/admin/API |
+| Language                   | Strict TypeScript 5.9.3 initially                                                   | Shared DTO validation/types; conservative toolchain choice while TS 7 support is verified                  |
+| Styling                    | Global CSS reset/tokens + component CSS Modules                                     | Exact control of the dark reference; no UI-kit visual language or utility-framework requirement            |
+| Database                   | PostgreSQL, exact hosted major pinned after provider selection                      | Relational taxonomy, approval records, transactions, constraints and predictable pagination                |
+| Data access                | Drizzle ORM 0.45.4 / Drizzle Kit 0.31.11 / Postgres.js 4.1.0 candidates             | Typed queries and reviewable SQL migrations without a separate backend service                             |
+| Authentication             | Better Auth 1.7.18, email/password + database sessions + two-factor plugin          | Maintained credential/session primitives; closed signup and server-owned admin role; no custom crypto      |
+| Validation                 | Zod 4.6.7 candidate                                                                 | Validate env, query/body DTOs and provider responses at trust boundaries                                   |
+| Images                     | Next Image + provider-permitted image CDN; Sharp where local optimization is needed | Responsive poster formats/sizes, reserved dimensions and controlled remote sources                         |
+| Component/unit/API logic   | Vitest 5.1.0, Vite 8.3.6, React plugin 6.2.1, Testing Library, jsdom                | Fast isolated tests; compatible engine/peer metadata observed, installation not yet tested                 |
+| Browser/accessibility      | Playwright 1.65.0 + axe Playwright 4.14.0 candidates                                | Real functional, viewport, keyboard and browser-engine checks                                              |
+| Quality                    | ESLint 9.39.4 with Next rules, Prettier 3.9.10, strict `tsc`                        | Stable lint baseline satisfying Next's >=9 peer requirement; formatting/type gates                         |
+| Performance                | Lighthouse CI plus HTTP/database timings                                            | Separate lab browser metrics from server/database evidence                                                 |
 
 Versions were read from npm metadata on 2026-11-07, not installed or integration-tested. Phase 2 must resolve a single compatible lockfile, audit it and record the actual chosen versions. Do not blindly upgrade everything or mix the listed candidates with incompatible plugins.
 
@@ -57,7 +57,7 @@ Admin browser
 Public rendering never calls the metadata API or reads admin secrets.
 ```
 
-### Proposed module tree (not created)
+### Module tree (Phase 2 subset implemented; future modules planned)
 
 ```text
 src/

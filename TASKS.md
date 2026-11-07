@@ -1,6 +1,6 @@
 # AZmovies — Task and Approval Queue
 
-**Current gate:** Phase 1 foundation review. **Website implementation is paused pending explicit owner approval.**
+**Current gate:** Phase 2 static visual prototype review. **Phase 3 is blocked until the owner explicitly approves the prototype and the documented deviations.**
 
 ## Phase 1 — foundation
 
@@ -8,42 +8,39 @@
 - [x] Inspect runtime/package manager/Git/GitHub/database/browser capabilities.
 - [x] Verify GitHub authentication and read-only repository access without exposing tokens.
 - [x] Record actual terminal egress limitations separately from web research access.
-- [x] Confirm no reference screenshots are available; do not invent a visual inspection.
+- [x] Confirm reference availability honestly; Phase 1 had no screenshots to inspect.
 - [x] Research stack/metadata/auth constraints and recommend a modular architecture.
-- [x] Create the 14 new brain documents and expand the inspected README.
+- [x] Create the brain documents and expand the inspected README.
 - [x] Define phased roadmap, schema/API/security contracts and UI/test/performance procedures.
 - [x] Prepare `.gitignore`, safe `.env.example` and inspected-runtime `.nvmrc`.
-- [x] Execute and record final foundation file/link/ignore/secret/diff checks.
-- [x] Create a focused local foundation commit after validation; hash recorded in AI_CONTEXT.md.
-- [x] Prepare the Phase 1 report and hold at the approval gate.
+- [x] Execute and record foundation file/link/ignore/secret/diff checks.
+- [x] Create local foundation commits `13ad936` and `de0e2bf`; no push.
 
-No application dependencies, pages, endpoints, migrations or app tests have been created. No GitHub push is planned without a separate request/approval.
+## Phase 2 — static fixture-based visual prototype
+
+- [x] Reinspect worktree and owner-supplied references; record the actual six-file mapping in `docs/references/README.md`.
+- [x] Install Next.js/TypeScript toolchain with a resolved npm lockfile and actual compatibility checks.
+- [x] Add strict format/lint/typecheck/unit/component/build/static-boundary scripts.
+- [x] Extract reference color/geometry observations into `scripts/analyze-references.mjs` and `.artifacts/phase2/reference-analysis.json`.
+- [x] Create measured global tokens and reusable layout/movie components.
+- [x] Build fixture-only header/search/categories/two-column grid/drawer/pagination/footer/Telegram treatment.
+- [x] Build fixture detail, not-found, loading, empty and error surfaces without live external movie actions.
+- [x] Generate original synthetic posters and optimize them to local 480×720 JPEG assets.
+- [x] Resolve Chromium execution through `@sparticuz/chromium`; record the sandbox library/flag workarounds.
+- [x] Execute Vitest unit/component tests: 16 passed.
+- [x] Execute Playwright Chromium functional/accessibility/responsive tests: 15 passed.
+- [x] Capture prototype screenshots at 360/390/768/1440 widths, drawer and detail states.
+- [x] Execute aligned primary-top visual comparison and record metrics/deviations; owner visual approval remains pending.
+- [x] Update context/architecture/UI/tests/changelog/bug tracker and create local Phase 2 commits `3f0120d` and `f1edf53`; no push.
+- [ ] Obtain owner approval of the prototype, contrast/safety deviations and remaining empty category states before Phase 3.
 
 ## Immediate owner inputs
 
-1. Approve or amend the stack and Phase 2 scope (Q-02).
-2. Attach desktop/mobile references and clarify two-column desktop behavior (Q-01/Q-03).
-3. Confirm authorized destination providers/evidence and content/quality/language vocabulary (Q-04/Q-08).
-4. Confirm monetization/TMDB permission or choose another licensed provider (Q-05).
-5. Select host/domain/PostgreSQL and an approved browser-test environment (Q-06).
-6. Provide the official Telegram URL through appropriate configuration, not an invented channel (Q-07).
-7. Confirm admin owner, MFA and recovery custody (Q-09).
-8. Confirm catalog scale, import cadence and poster rights (Q-10).
-
-Inputs 1/2 gate the proposed visual phase; the others gate their dependent phases and need not block nonvisual tooling setup if the owner explicitly scopes that exception.
-
-## Phase 2 — awaiting approval
-
-- [ ] Reinspect worktree/new references and record approved decisions.
-- [ ] Scaffold Next.js/TypeScript with a reviewed lockfile and actual compatibility checks.
-- [ ] Add strict format/lint/typecheck/component-test/build scripts.
-- [ ] Establish reference-approved CSS tokens and owned/synthetic assets.
-- [ ] Build fixture-only header/search/categories/two-column grid/sidebar/pagination/footer/Telegram treatment.
-- [ ] Build fixture detail/loading/empty/error states without live external movie actions.
-- [ ] Add component/accessibility tests and deterministic viewport captures.
-- [ ] Resolve browser execution blocker and run scoped tests.
-- [ ] Compare with actual references, record differences and obtain visual approval.
-- [ ] Update context/architecture/UI/tests/changelog; stop at Phase 3 gate.
+1. Approve or request changes to the Phase 2 visual match using `.artifacts/phase2/comparison-primary-top.png` and the live preview.
+2. Accept or amend the documented safety/accessibility deviations: AZmovies branding, synthetic posters, inert Telegram/app/footer controls, “How To Watch?” wording and darkened AA pill colors.
+3. Optionally supply the missing third MOVIES4U screenshot; the received primary MOVIES4U set contains two files, not three.
+4. Before Phase 3: provision approved PostgreSQL, confirm admin owner/MFA/recovery custody and confirm authorized destination/content policy.
+5. Before Phase 4/5: supply official Telegram URL, authorized external-link inventory and metadata permission/provider decision.
 
 ## Phase 3 — persistence/admin/auth
 

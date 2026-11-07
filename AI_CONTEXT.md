@@ -1,6 +1,6 @@
 # AZmovies — AI Context
 
-**Checkpoint:** 2026-11-07 · Phase 1 foundation · **Awaiting owner approval before website implementation**
+**Checkpoint:** 2026-11-07 · Phase 2 static fixture prototype delivered locally · **Awaiting owner visual approval before Phase 3**
 
 This is the concise project memory. Read `AGENTS.md` before acting. Plans below are not claims of implemented functionality.
 
@@ -12,25 +12,25 @@ The owner has explicitly prohibited unnecessary redesign and premature implement
 
 ## 2. Verified repository and tooling snapshot
 
-| Item | Actual observation on 2026-11-07 |
-| --- | --- |
-| Checkout | `/home/user/AZmovies` |
-| Session branch | `arena/9177d6f3-azmovies` |
-| Starting commit | `662694163ddf11337fa5a7cceea83bacdd4472d8` (`Initial commit`) |
-| Foundation commit | `13ad936a25e236985068fa5d422f64aafdb04afa` — local only; a follow-up checkpoint records validation evidence |
-| Starting tracked content | `README.md` only, containing `# AZmovies`; inspected before expansion |
-| Starting worktree | Clean |
-| Remote | `https://github.com/sachi26698-LIMA/AZmovies.git` |
-| GitHub CLI | 2.23.0; authenticated as `sachi26698-LIMA` through an existing environment token, never printed |
-| GitHub API | Read-only repository request succeeded; public, unarchived, default branch `main`; API reported push/admin permissions |
-| GitHub writes | No push, PR, merge or remote configuration change performed |
-| Git | 2.39.5; local commit identity configured |
-| OS/resources | Linux x86_64; 2 CPUs; approximately 3.8 GiB RAM; approximately 20 GiB free disk at inspection |
-| Node/npm | Node 22.22.3 / npm 10.9.8; npm registry metadata reads succeeded |
-| Other runtimes | Python 3.11.2; Yarn 1.22.22; pnpm/Bun absent |
-| Database/browser tools | No `psql`, `sqlite3`, Docker, Chromium, Chrome or Firefox executable found |
-| Visual references | No image/PDF files found in the available workspace; no screenshot attachment was available to inspect |
-| Application | No package manifest, dependencies, source routes, migrations or application tests exist |
+| Item                     | Actual observation on 2026-11-07                                                                                                             |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Checkout                 | `/home/user/AZmovies`                                                                                                                        |
+| Session branch           | `arena/9177d6f3-azmovies`                                                                                                                    |
+| Starting commit          | `662694163ddf11337fa5a7cceea83bacdd4472d8` (`Initial commit`)                                                                                |
+| Foundation commit        | `13ad936a25e236985068fa5d422f64aafdb04afa` — local only; a follow-up checkpoint records validation evidence                                  |
+| Starting tracked content | `README.md` only, containing `# AZmovies`; inspected before expansion                                                                        |
+| Starting worktree        | Clean                                                                                                                                        |
+| Remote                   | `https://github.com/sachi26698-LIMA/AZmovies.git`                                                                                            |
+| GitHub CLI               | 2.23.0; authenticated as `sachi26698-LIMA` through an existing environment token, never printed                                              |
+| GitHub API               | Read-only repository request succeeded; public, unarchived, default branch `main`; API reported push/admin permissions                       |
+| GitHub writes            | No push, PR, merge or remote configuration change performed                                                                                  |
+| Git                      | 2.39.5; local commit identity configured                                                                                                     |
+| OS/resources             | Linux x86_64; 2 CPUs; approximately 3.8 GiB RAM; approximately 20 GiB free disk at inspection                                                |
+| Node/npm                 | Node 22.22.3 / npm 10.9.8; npm registry metadata reads succeeded                                                                             |
+| Other runtimes           | Python 3.11.2; Yarn 1.22.22; pnpm/Bun absent                                                                                                 |
+| Database/browser tools   | No `psql`, `sqlite3`, Docker, Chromium, Chrome or Firefox executable found                                                                   |
+| Visual references        | Six owner-supplied JPEGs inspected and mapped; two primary MOVIES4U captures, four HDHub4u supplementary captures; raw images ignored by Git |
+| Application              | Phase 2 Next.js static fixture prototype implemented; no live API/database/auth/redirect; local commits `3f0120d` and `f1edf53`; no push     |
 
 The GitHub CLI rejected the newer `--active` flag; plain `gh auth status` succeeded. This is a CLI-version limitation, not an authentication failure.
 
@@ -52,16 +52,16 @@ The GitHub CLI rejected the newer `--active` flag; plain `gh auth status` succee
 
 ## 4. Proposed decisions (owner approval pending)
 
-| ID | Decision | Reason/qualification |
-| --- | --- | --- |
-| D-01 | Next.js App Router + React + strict TypeScript | Server-rendered discovery/detail pages and private admin/API in one modular codebase |
-| D-02 | Hand-authored CSS Modules and global design tokens | Direct control of reference spacing/typography without a recognizable template or UI-kit theme |
-| D-03 | PostgreSQL + Drizzle migrations/query layer | Relational catalog, transactions, constraints, full approval/audit history; same database engine in test/staging |
+| ID   | Decision                                                                      | Reason/qualification                                                                                                              |
+| ---- | ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| D-01 | Next.js App Router + React + strict TypeScript                                | Server-rendered discovery/detail pages and private admin/API in one modular codebase                                              |
+| D-02 | Hand-authored CSS Modules and global design tokens                            | Direct control of reference spacing/typography without a recognizable template or UI-kit theme                                    |
+| D-03 | PostgreSQL + Drizzle migrations/query layer                                   | Relational catalog, transactions, constraints, full approval/audit history; same database engine in test/staging                  |
 | D-04 | Better Auth email/password, database sessions, closed registration, admin MFA | Maintained auth primitives instead of handwritten password/session crypto; production requires TOTP setup and recovery procedures |
-| D-05 | Provider-neutral metadata boundary; TMDB candidate only | Manual operation remains usable; live TMDB requires an appropriate permission/licence and working egress |
-| D-06 | Opaque-ID redirect route + exact destination policy + per-link approval | No arbitrary `?url=` redirect; authorization is checked at click time |
-| D-07 | Vitest/Testing Library, Playwright engines, axe, Lighthouse, CI | Covers component/API/auth/functional/responsive/security/regression layers; actual runs still required |
-| D-08 | Two poster columns pending reference clarification | Preserves the explicit brief; desktop/mobile screenshot evidence must resolve any conflict before visual sign-off |
+| D-05 | Provider-neutral metadata boundary; TMDB candidate only                       | Manual operation remains usable; live TMDB requires an appropriate permission/licence and working egress                          |
+| D-06 | Opaque-ID redirect route + exact destination policy + per-link approval       | No arbitrary `?url=` redirect; authorization is checked at click time                                                             |
+| D-07 | Vitest/Testing Library, Playwright engines, axe, Lighthouse, CI               | Covers component/API/auth/functional/responsive/security/regression layers; actual runs still required                            |
+| D-08 | Two poster columns pending reference clarification                            | Preserves the explicit brief; desktop/mobile screenshot evidence must resolve any conflict before visual sign-off                 |
 
 Runtime baseline: use the available Node 22.22.3 and npm lockfile. Conservative TypeScript 5.9.3 is proposed while surrounding tooling compatibility is checked; npm also reports TypeScript 7.0.2, which is not yet selected. Exact dependency resolution belongs to Phase 2, not this document-only phase.
 
@@ -75,21 +75,23 @@ The FAQ separately describes free noncommercial use and attribution/branding req
 
 ## 6. Outstanding questions / blockers
 
-| ID | Question / missing input | Blocks | Default until answered |
-| --- | --- | --- | --- |
-| Q-01 | Please attach the actual desktop/mobile MOVIES4U screenshots, including sidebar/category states if available. | Exact Phase 2 visual matching | Use only the written inventory; no claimed visual match |
-| Q-02 | Approve the proposed stack and Phase 2 scope? | All website scaffolding | No implementation |
-| Q-03 | Is two columns intended on desktop as well as mobile? | Final grid breakpoints | Plan two columns, not an invented five-column redesign |
-| Q-04 | Which external providers/pages are authorized, and what evidence supports each link? | Publishable redirects/production content | No live external movie links |
-| Q-05 | Will the site monetize, and is an appropriate TMDB agreement available? | Live TMDB integration | Manual-first; provider disabled |
-| Q-06 | Which hosting platform, domain and PostgreSQL provider will be used? | Deployment-specific cookies, proxy trust, cron, browser CI and database integration | Local/preview configuration only after approval |
-| Q-07 | What is the official Telegram destination? | Floating link activation | Hide unconfigured link rather than invent a channel |
-| Q-08 | Which languages, category labels and quality vocabulary should be used? | Reference/content acceptance | Editable taxonomy; unknown quality is explicit, never fabricated |
-| Q-09 | Who owns admin recovery, and is authenticator-based MFA acceptable? | Production admin rollout | Single admin; no public signup or unverified email recovery |
-| Q-10 | Expected catalog size/import cadence and poster rights/source? | Capacity, storage and import scheduling | Initial performance fixture target: 10,000 movies; no bulk copyrighted assets committed |
+| ID   | Question / missing input                                                                    | Blocks                                                                              | Default until answered                                                                  |
+| ---- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Q-01 | References received and inspected; optional missing third MOVIES4U capture remains BLK-011. | Owner visual approval of executed comparison                                        | Proceed with documented primary pair and disclosed deviations                           |
+| Q-02 | Approve the proposed stack and Phase 2 scope?                                               | All website scaffolding                                                             | No implementation                                                                       |
+| Q-03 | Is two columns intended on desktop as well as mobile?                                       | Final grid breakpoints                                                              | Plan two columns, not an invented five-column redesign                                  |
+| Q-04 | Which external providers/pages are authorized, and what evidence supports each link?        | Publishable redirects/production content                                            | No live external movie links                                                            |
+| Q-05 | Will the site monetize, and is an appropriate TMDB agreement available?                     | Live TMDB integration                                                               | Manual-first; provider disabled                                                         |
+| Q-06 | Which hosting platform, domain and PostgreSQL provider will be used?                        | Deployment-specific cookies, proxy trust, cron, browser CI and database integration | Local/preview configuration only after approval                                         |
+| Q-07 | What is the official Telegram destination?                                                  | Floating link activation                                                            | Hide unconfigured link rather than invent a channel                                     |
+| Q-08 | Which languages, category labels and quality vocabulary should be used?                     | Reference/content acceptance                                                        | Editable taxonomy; unknown quality is explicit, never fabricated                        |
+| Q-09 | Who owns admin recovery, and is authenticator-based MFA acceptable?                         | Production admin rollout                                                            | Single admin; no public signup or unverified email recovery                             |
+| Q-10 | Expected catalog size/import cadence and poster rights/source?                              | Capacity, storage and import scheduling                                             | Initial performance fixture target: 10,000 movies; no bulk copyrighted assets committed |
 
 ## 7. Current evidence and next action
 
-Application tests: **Not run — no application exists**. Browser, live TMDB, database integration and production security checks: **Not run**. Foundation checks FND-01–07 and FND-09 passed within their inspection/validation scope; FND-08 remains blocked by terminal egress. Actual results and limits are recorded in `TEST_CASES.md`: 15 documents, 15 valid local links, 18 intended staged files, clean staged diff, safe example variables and verified ignore probes. The targeted credential-pattern review is not a comprehensive secret scan.
+Phase 2 application checks executed on 2026-11-07: `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run verify:static`, `npm run test` (16 Vitest tests passed), `npm run build` (51 static pages), `npx playwright test` (15 Chromium tests passed), `npm run capture:prototype`, `npm run compare:visual`, and runtime `npm audit --omit=dev` (0 reported vulnerabilities). Artifacts are under `.artifacts/phase2/`, including `comparison-primary-top.png`, `prototype-metrics.json`, `playwright-results.json`, `static-boundary.json` and `reference-analysis.json`.
 
-Next action: present the Phase 1 report and wait for explicit approval. The proposed Phase 2 is toolchain setup plus a reference-matched, fixture-only visual shell and component tests; it is not a live metadata/download integration. See `PROJECT_PLAN.md` and `TASKS.md`.
+Browser execution was resolved through `@sparticuz/chromium` with bundled AL2023 library extraction and omission of the unstable `--single-process` flag in this sandbox. Firefox/WebKit, real devices, screen-reader smoke, Lighthouse/Core Web Vitals, database/auth/API/live-metadata and production security checks remain **Not run**. Owner visual approval remains **pending**.
+
+Next action: present `PHASE2_REPORT.md`, the live preview and the aligned comparison artifact, then wait for explicit owner approval before Phase 3. Do not start persistence/admin/auth merely because the prototype builds.
