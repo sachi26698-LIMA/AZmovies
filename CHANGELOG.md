@@ -25,6 +25,7 @@ All notable completed project changes are recorded here. This is a phase-control
 - Node/npm/Git/runtime/resource inventory and npm metadata reads succeeded.
 - Terminal TMDB and Playwright CDN probes failed; live provider/browser execution remains blocked.
 - Foundation validation passed: 15 required documents, 15 resolved local links, 18 intended staged files, clean staged whitespace check, safe example variables and 19 ignore-rule probes. Targeted credential-pattern review found no matches; this is not a comprehensive secret scan. Application tests remain unrun.
+- Local foundation commit `13ad936a25e236985068fa5d422f64aafdb04afa` created on the session branch after validation; no GitHub push performed.
 
 ### Not added
 

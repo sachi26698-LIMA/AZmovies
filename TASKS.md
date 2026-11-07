@@ -14,8 +14,8 @@
 - [x] Define phased roadmap, schema/API/security contracts and UI/test/performance procedures.
 - [x] Prepare `.gitignore`, safe `.env.example` and inspected-runtime `.nvmrc`.
 - [x] Execute and record final foundation file/link/ignore/secret/diff checks.
-- [ ] Create a focused local foundation commit after validation; report actual hash.
-- [ ] Deliver Phase 1 report and stop for approval.
+- [x] Create a focused local foundation commit after validation; hash recorded in AI_CONTEXT.md.
+- [x] Prepare the Phase 1 report and hold at the approval gate.
 
 No application dependencies, pages, endpoints, migrations or app tests have been created. No GitHub push is planned without a separate request/approval.
 

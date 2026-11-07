@@ -17,6 +17,7 @@ The owner has explicitly prohibited unnecessary redesign and premature implement
 | Checkout | `/home/user/AZmovies` |
 | Session branch | `arena/9177d6f3-azmovies` |
 | Starting commit | `662694163ddf11337fa5a7cceea83bacdd4472d8` (`Initial commit`) |
+| Foundation commit | `13ad936a25e236985068fa5d422f64aafdb04afa` — local only; a follow-up checkpoint records validation evidence |
 | Starting tracked content | `README.md` only, containing `# AZmovies`; inspected before expansion |
 | Starting worktree | Clean |
 | Remote | `https://github.com/sachi26698-LIMA/AZmovies.git` |
