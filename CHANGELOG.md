@@ -26,7 +26,7 @@ All notable completed project changes are recorded here. This is a phase-control
 - `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run verify:static`: passed.
 - `npm run test`: 52 passed. `npm run build`: 532 static pages. `npx playwright test`: 30 passed.
 - `npm run capture:prototype`: executed. `npm audit --omit=dev`: 0 reported runtime vulnerabilities.
-- No GitHub push performed.
+- Local commit `9ba92ac57f895c5798bc10ef49cda174bab9a056` on `arena/9177d6f3-azmovies`; no GitHub push performed.
 
 ### Not added / still locked
 

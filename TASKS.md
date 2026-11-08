@@ -52,7 +52,7 @@
 - [x] Build the prototype per-link manager with add/edit/disable/enable/delete and reset, each link independent.
 - [x] Execute 52 Vitest and 30 Chromium tests, including mapping, invalid URLs, disabled links and navigation.
 - [x] Capture Page 3, denial, disabled, link-manager and tablet/desktop screenshots.
-- [x] Update AI Brain, architecture, API, schema, security, UI, testing and task records.
+- [x] Update AI Brain, architecture, API, schema, security, UI, testing and task records; local commit `9ba92ac`, no push.
 - [ ] Obtain owner approval of Page 3 and its disclosed deviations.
 - [ ] Receive authorized provider URLs plus per-link evidence before any real destination is activated.
 

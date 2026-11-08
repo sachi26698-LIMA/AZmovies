@@ -2,6 +2,7 @@
 
 **Date:** 2026-11-08
 **Branch:** `arena/9177d6f3-azmovies`
+**Implementation commit:** `9ba92ac57f895c5798bc10ef49cda174bab9a056` (local only, not pushed)
 **Status:** implemented and verified locally; **awaiting owner approval**. No GitHub push performed.
 **Scope:** still the fixture-only prototype phase. No real external destination is activated.
 
