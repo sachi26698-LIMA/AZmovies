@@ -1,8 +1,8 @@
 # AZmovies — AI Context
 
-**Checkpoint:** final Phase 2 refinement tested locally · **Awaiting explicit owner approval before persistence/authentication or live redirects.** No push.
+**Checkpoint:** Phase 2 PR #1 merged into `main` at `72f3ed4`; post-merge verification completed on an initially clean, identical session checkout. **Awaiting explicit owner approval before Phase 3, persistence/authentication or live redirects.**
 
-This is the concise project memory. Read `AGENTS.md` before acting. Plans below are not claims of implemented functionality.
+This is the concise project memory. Read `AGENTS.md` before acting. Plans below are not claims of implemented functionality. The repository/tooling table records the initial and pre-merge state; its earlier “no push” statements are historical, not the current GitHub status. The post-merge report is `PHASE2_REPORT.md`.
 
 ## 1. Product and immutable boundaries
 
@@ -92,7 +92,9 @@ The FAQ separately describes free noncommercial use and attribution/branding req
 
 ## 7. Current evidence and next action
 
-Final sandbox run: `npm run test` **52/52** Vitest tests; `npm run build` **532 static pages**; `npx playwright test` **36/36** Chromium tests; the overlapping `npm run test:a11y` and `npm run test:responsive` subsets passed **3/3** and **19/19**. Format, lint, typecheck, static-boundary and public-boundary checks passed; `npm audit --omit=dev` reported **0** runtime vulnerabilities. The public-build check inspected **19 static assets and 2,660 generated HTML/RSC files** for current fixture signatures; an intentional client import of a `server-only` module was rejected by Next. Tests cover all 480 synthetic mappings and the visible journey. Captures, metrics, comparisons and logs are in `.artifacts/phase2/`; see `PHASE2_REPORT.md` and `PAGE3_REPORT.md`.
+Post-merge: GitHub `main` and the clean `arena/252d03ee-azmovies` checkout initially matched merge commit `72f3ed4a4dc47c3fc0249b8b7963b93554c25c65`. A fresh production build generated 532 pages; `npm run test` passed 52/52 and `npx playwright test` passed 36/36. Fresh 360/390 px captures and navigation checks passed; see `.artifacts/post-merge/` and `PHASE2_REPORT.md`. Runtime audit found 0 vulnerabilities; the full audit reported 10 moderate development-tooling findings (BUG-018). The unauthenticated E2B proxy 403 is consistent with documented private-sandbox behavior; the actual authenticated Arena iframe remains unverified (BUG-014).
+
+Pre-merge final sandbox run: `npm run test` **52/52** Vitest tests; `npm run build` **532 static pages**; `npx playwright test` **36/36** Chromium tests; the overlapping `npm run test:a11y` and `npm run test:responsive` subsets passed **3/3** and **19/19**. Format, lint, typecheck, static-boundary and public-boundary checks passed; `npm audit --omit=dev` reported **0** runtime vulnerabilities. The public-build check inspected **19 static assets and 2,660 generated HTML/RSC files** for current fixture signatures; an intentional client import of a `server-only` module was rejected by Next. Tests cover all 480 synthetic mappings and the visible journey. Captures, metrics, comparisons and logs are in `.artifacts/phase2/`; see `PHASE2_REPORT.md` and `PAGE3_REPORT.md`.
 
 Server fixture records and destination URLs remain behind the `server-only` boundary. The public page receives only a safe summary; Continue is natively disabled. The owner chose an isolated session demo: its add/edit/disable/delete operations never affect server mappings or public pages. The destination test field is validated then discarded. The old v1 session key is neither read, migrated nor deleted and may persist in older tabs until the session ends.
 

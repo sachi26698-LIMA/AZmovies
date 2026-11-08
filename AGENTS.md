@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-**Phase 2: static-fixture prototype, final owner review pending.** The homepage, movie detail, intermediate handoff and isolated session-demo manager exist locally. Do not begin Phase 3, add a live backend or activate external destinations without explicit owner approval.
+**Phase 2: static-fixture prototype merged in PR #1; post-merge owner review pending.** The homepage, movie detail, intermediate handoff and isolated session-demo manager are on `main`. Do not begin Phase 3, add a live backend or activate external destinations without explicit owner approval.
 
 ## Read before changing anything
 
@@ -23,7 +23,7 @@
 
 ## Scope and file discipline
 
-- Work only on `arena/9177d6f3-azmovies`; do not create, rename or switch branches.
+- Work only on the Arena session's assigned branch; do not create, rename or switch branches.
 - Wait for explicit owner approval at each implementation gate. Approval of the foundation is not production-release approval.
 - Inspect before editing. Never overwrite working code blindly or remove functionality without permission.
 - Keep changes small and cohesive. Do not refactor unrelated modules during a feature change.
