@@ -25,7 +25,8 @@
     "analyze:references": "node scripts/analyze-references.mjs",
     "capture:prototype": "node scripts/capture-prototype.mjs",
     "compare:visual": "node scripts/compare-visual.mjs",
-    "verify:static": "node scripts/verify-static.mjs"
+    "verify:static": "node scripts/verify-static.mjs",
+    "verify:public-boundary": "node scripts/verify-public-boundary.mjs"
   },
   "dependencies": {
     "next": "16.4.5",

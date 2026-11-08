@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
-const widths = [320, 375, 390, 768, 1024, 1440, 1920];
+const widths = [320, 360, 375, 390, 768, 1024, 1440, 1920];
 
 test('home renders the required static prototype regions', async ({ page }) => {
   await page.goto('/');
@@ -65,15 +65,26 @@ test('fixture detail navigation renders required sections and returns home', asy
   await expect(page.getByRole('region', { name: 'Detailed movie information' })).toContainText(
     'Director:',
   );
-  const gallery = page.getByRole('region', { name: 'Scrollable movie screenshot gallery' });
+  const gallery = page.getByRole('region', { name: 'Movie screenshot gallery' });
   await expect(gallery).toBeVisible();
-  expect(await gallery.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
+  await expect(gallery.locator('img')).toHaveCount(3);
   await expect(page.getByRole('region', { name: 'Quality options' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Watch options' })).toBeVisible();
+  const sectionOrder = await page.evaluate(() =>
+    ['Detailed movie information', 'Movie screenshots', 'Quality options', 'Watch options'].map(
+      (name) => {
+        const element = document.querySelector(`[aria-label="${name}"]`);
+        return element ? element.getBoundingClientRect().top + window.scrollY : -1;
+      },
+    ),
+  );
+  expect(
+    sectionOrder.every((top, index) => top >= 0 && (index === 0 || top > sectionOrder[index - 1]!)),
+  ).toBe(true);
   // Page 3: provider options open an internal intermediate page, never an external host.
   await expect(
     page.locator('ul[aria-label="Authorized provider placeholders"] a').first(),
-  ).toHaveAttribute('href', /^\/go\/lnk-\d{4}\/?$/);
+  ).toHaveAttribute('href', /^\/go\/[^/]+\/provider-a\/?$/);
   await expect(page.getByRole('region', { name: 'Related movies' })).toBeVisible();
   await expect(page.getByRole('contentinfo')).toBeVisible();
   expect(await page.locator('a[href^="http"]').count()).toBe(0);
@@ -93,7 +104,7 @@ test('detail toolbar search returns to the homepage fixture search', async ({ pa
   await expect(page.getByRole('status')).toContainText('No fixture matches');
 });
 
-for (const width of [320, 768, 1440]) {
+for (const width of [320, 360, 390, 768, 1440]) {
   test(`@responsive detail ${width}px has no page overflow and keeps related grid`, async ({
     page,
   }) => {
@@ -173,10 +184,23 @@ for (const width of widths) {
         scrollWidth: document.documentElement.scrollWidth,
         innerWidth: window.innerWidth,
         columns: style?.gridTemplateColumns ?? '',
+        clippedLabels: Array.from(
+          document.querySelectorAll('nav[aria-label="Movie categories"] button'),
+        ).filter((button) => button.scrollWidth > button.clientWidth + 1).length,
+        categoryRowsAligned: Array.from(
+          document.querySelector('nav[aria-label="Movie categories"]')?.children[1]?.children ?? [],
+        ).every((row) => {
+          const positions = Array.from(row.querySelectorAll('button')).map(
+            (button) => button.getBoundingClientRect().top,
+          );
+          return positions.every((top) => Math.abs(top - (positions[0] ?? top)) < 1);
+        }),
       };
     });
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
     expect(metrics.columns.split(' ').filter(Boolean)).toHaveLength(2);
+    expect(metrics.clippedLabels).toBe(0);
+    expect(metrics.categoryRowsAligned).toBe(true);
     await expect(page.getByRole('link', { name: 'AZmovies home' })).toBeVisible();
   });
 }

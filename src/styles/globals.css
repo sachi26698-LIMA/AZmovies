@@ -28,13 +28,13 @@
 
   --space-header-gutter: 9px;
   --space-search-gutter: 29px;
-  --space-category-gutter: 34px;
+  --space-category-gutter: 18px;
   --space-grid-gutter: 20px;
-  --space-grid-gap: 26px;
+  --space-grid-gap: 27px;
   --poster-border-width: 3px;
   --header-height: 52px;
-  --category-height: 38px;
-  --radius-category: 12px;
+  --category-height: 35px;
+  --radius-category: 7px;
   --radius-search: 4px;
 
   --font-body:

@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { PROVIDER_LINKS, getLinkById } from '@/lib/link-fixtures';
+import { PUBLIC_LINKS } from '@/lib/link-catalog';
 import {
   EMPTY_LINK_STATE,
   LINK_STORAGE_KEY,
   applyLinkOverrides,
   createCustomLink,
+  demoKeyFor,
   parseLinkState,
   readRawLinkState,
-  resolveStoredLink,
+  resolveDemoLink,
   writeLinkState,
 } from '@/lib/link-store';
 
@@ -15,86 +16,94 @@ beforeEach(() => {
   window.sessionStorage.clear();
 });
 
-describe('prototype link override store', () => {
-  it('returns untouched fixtures when nothing is overridden', () => {
-    expect(applyLinkOverrides(EMPTY_LINK_STATE)).toHaveLength(PROVIDER_LINKS.length);
-    expect(resolveStoredLink(EMPTY_LINK_STATE, 'lnk-0001')).toEqual(getLinkById('lnk-0001'));
+const first = PUBLIC_LINKS[0]!;
+const firstKey = demoKeyFor(first);
+
+describe('isolated prototype link demo store', () => {
+  it('starts with public-only fixture descriptions and no server records', () => {
+    expect(applyLinkOverrides(EMPTY_LINK_STATE)).toHaveLength(PUBLIC_LINKS.length);
+    expect(resolveDemoLink(EMPTY_LINK_STATE, firstKey)).toMatchObject(first);
+    expect(JSON.stringify(applyLinkOverrides(EMPTY_LINK_STATE))).not.toMatch(
+      /lnk-\d{4}|https?:\/\//,
+    );
   });
 
-  it('applies an individual edit without touching sibling links', () => {
+  it('edits, disables and deletes one demo option without changing the public catalog', () => {
     const state = {
-      overrides: {
-        'lnk-0001': { label: 'Edited label', targetUrl: 'https://beta.example.com/watch/m/custom' },
-      },
+      overrides: { [firstKey]: { label: 'Edited demo', status: 'disabled' as const } },
       added: [],
     };
-    const edited = resolveStoredLink(state, 'lnk-0001')!;
-    expect(edited.label).toBe('Edited label');
-    expect(edited.targetUrl).toBe('https://beta.example.com/watch/m/custom');
-    expect(resolveStoredLink(state, 'lnk-0003')).toEqual(getLinkById('lnk-0003'));
+    expect(resolveDemoLink(state, firstKey)).toMatchObject({
+      label: 'Edited demo',
+      status: 'disabled',
+    });
+    expect(PUBLIC_LINKS[0]).toEqual(first);
+    const deleted = { overrides: { [firstKey]: { deleted: true } }, added: [] };
+    expect(resolveDemoLink(deleted, firstKey)).toBeUndefined();
+    expect(applyLinkOverrides(deleted)).toHaveLength(PUBLIC_LINKS.length - 1);
   });
 
-  it('disables and deletes individual links', () => {
-    const disabled = { overrides: { 'lnk-0001': { status: 'disabled' as const } }, added: [] };
-    expect(resolveStoredLink(disabled, 'lnk-0001')?.status).toBe('disabled');
-    const deleted = { overrides: { 'lnk-0001': { deleted: true } }, added: [] };
-    expect(resolveStoredLink(deleted, 'lnk-0001')).toBeUndefined();
-    expect(applyLinkOverrides(deleted)).toHaveLength(PROVIDER_LINKS.length - 1);
+  it('creates independent session drafts, not public routes', () => {
+    const input = {
+      movieSlug: first.movieSlug,
+      movieTitle: first.movieTitle,
+      kind: 'provider' as const,
+      label: 'Custom demo',
+      quality: '2160p',
+      providerId: 'alpha',
+      providerName: 'Fixture Provider Alpha',
+      status: 'enabled' as const,
+      hasValidatedDraft: true,
+    };
+    const custom = createCustomLink(input, []);
+    const second = createCustomLink(input, [custom.demoKey]);
+    expect(custom.demoKey).not.toBe(second.demoKey);
+    expect(custom.draftOnly).toBe(true);
+    expect(resolveDemoLink({ overrides: {}, added: [custom] }, custom.demoKey)).toEqual(custom);
   });
 
-  it('creates unique custom links that resolve like fixtures', () => {
+  it('strips unexpected URL fields and never persists a test destination', () => {
+    const testUrl = 'https://alpha.example.com/watch/typed-by-user';
     const custom = createCustomLink(
       {
-        movieSlug: 'the-odyssey-protocol-2',
-        movieTitle: 'The Odyssey Protocol',
+        movieSlug: first.movieSlug,
+        movieTitle: first.movieTitle,
         kind: 'provider',
-        label: 'Custom link',
-        quality: '1080p',
+        label: 'Draft',
+        quality: '720p',
         providerId: 'alpha',
         providerName: 'Fixture Provider Alpha',
-        targetUrl: 'https://alpha.example.com/watch/custom/1080p',
         status: 'enabled',
+        hasValidatedDraft: true,
       },
-      PROVIDER_LINKS.map((link) => link.id),
+      [],
     );
-    expect(custom.id).toMatch(/^lnk-c\d{4}$/);
-    expect(custom.authorization).toBe('fixture-placeholder');
-    const state = { overrides: {}, added: [custom] };
-    expect(resolveStoredLink(state, custom.id)).toEqual(custom);
-    const second = createCustomLink(
-      {
-        movieSlug: custom.movieSlug,
-        movieTitle: custom.movieTitle,
-        kind: 'provider',
-        label: 'Another',
-        quality: '720p',
-        providerId: 'beta',
-        providerName: 'Fixture Provider Beta',
-        targetUrl: 'https://beta.example.com/watch/custom/720p',
-        status: 'enabled',
-      },
-      [...PROVIDER_LINKS.map((link) => link.id), custom.id],
+    const parsed = parseLinkState(
+      JSON.stringify({
+        overrides: { [firstKey]: { label: 'Edited', targetUrl: testUrl } },
+        added: [{ ...custom, targetUrl: testUrl }],
+      }),
     );
-    expect(second.id).not.toBe(custom.id);
+    writeLinkState(parsed);
+    expect(readRawLinkState()).not.toContain(testUrl);
+    expect(readRawLinkState()).not.toContain('targetUrl');
+    expect(resolveDemoLink(parsed, custom.demoKey)?.label).toBe('Draft');
   });
 
-  it('round-trips through session storage and ignores corrupted payloads', () => {
-    writeLinkState({ overrides: { 'lnk-0001': { status: 'disabled' } }, added: [] });
-    expect(readRawLinkState()).toContain('disabled');
-    expect(resolveStoredLink(parseLinkState(readRawLinkState()), 'lnk-0001')?.status).toBe(
-      'disabled',
-    );
+  it('does not read, migrate or erase old session data', () => {
+    const legacyKey = 'azmovies.prototype.links.v1';
+    const legacyValue = JSON.stringify({ overrides: { 'lnk-0001': { status: 'disabled' } } });
+    window.sessionStorage.setItem(legacyKey, legacyValue);
+    expect(readRawLinkState()).toBe('');
+    writeLinkState({ overrides: { [firstKey]: { status: 'enabled' } }, added: [] });
+    expect(window.sessionStorage.getItem(legacyKey)).toBe(legacyValue);
+  });
 
+  it('round-trips safe state and ignores corrupted payloads', () => {
+    writeLinkState({ overrides: { [firstKey]: { status: 'disabled' } }, added: [] });
+    expect(resolveDemoLink(parseLinkState(readRawLinkState()), firstKey)?.status).toBe('disabled');
     window.sessionStorage.setItem(LINK_STORAGE_KEY, '{not json');
-    expect(resolveStoredLink(parseLinkState(readRawLinkState()), 'lnk-0001')).toEqual(
-      getLinkById('lnk-0001'),
-    );
-
-    window.sessionStorage.setItem(LINK_STORAGE_KEY, JSON.stringify({ overrides: { x: 5 } }));
-    expect(resolveStoredLink(parseLinkState(readRawLinkState()), 'lnk-0001')).toEqual(
-      getLinkById('lnk-0001'),
-    );
-
+    expect(parseLinkState(readRawLinkState())).toEqual(EMPTY_LINK_STATE);
     writeLinkState(EMPTY_LINK_STATE);
     expect(window.sessionStorage.getItem(LINK_STORAGE_KEY)).toBeNull();
   });

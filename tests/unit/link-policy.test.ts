@@ -146,8 +146,8 @@ describe('continue decision', () => {
     }
   });
 
-  it('cannot be pointed at a caller-supplied target', () => {
-    // The only lookup key is an opaque id; an id that carries a URL resolves to nothing.
+  it('does not resolve a caller-supplied target through the internal lookup', () => {
+    // This lookup is server-only; public routes use descriptive movie/option selectors.
     expect(getLinkById('lnk-0001?url=https://evil.example.com')).toBeUndefined();
     expect(getLinkById('https://evil.example.com')).toBeUndefined();
     const link = getLinkById('lnk-0001')!;

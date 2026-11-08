@@ -124,8 +124,9 @@ Only HTTPS and standard port 443 are accepted by application policy. No userinfo
 
 | Field                               | Type / rule                                                                     |
 | ----------------------------------- | ------------------------------------------------------------------------------- |
-| id                                  | uuid PK; used by `/r/{linkId}`                                                  |
+| id                                  | uuid PK; internal only, never sent to public users                              |
 | movie_id                            | uuid FK movies                                                                  |
+| option_slug                         | descriptive public option selector; unique within a movie                       |
 | destination_id                      | uuid FK redirect_destinations                                                   |
 | target_url                          | text; canonical HTTPS URL, bounded length, validated against destination policy |
 | label / provider_name               | text; truthful action description                                               |
@@ -142,15 +143,7 @@ Only HTTPS and standard port 443 are accepted by application policy. No userinfo
 
 Approved-link check constraints require evidence and approval metadata. Any material target change returns the link to pending and clears approval; approval cannot be mass-assigned through a movie update. Revoked/expired links and inactive destinations fail at click time. Follow no caller-supplied redirect target.
 
-**Page 3 fixture mapping (2026-11-08, no database yet).** `ProviderLinkFixture` in
-`src/lib/link-fixtures.ts` is the shape this table must absorb: `id` → opaque public id,
-`movieSlug` → `movie_id`, `targetUrl` → `target_url` + `destination_id`, `providerName`/`label` →
-label/provider columns, `status: enabled|disabled` → link lifecycle (the persisted model still needs
-`pending`/`revoked`). There is deliberately no fixture field for `authorization_evidence` or
-`approved_by`/`approved_at`: every record is `authorization: 'fixture-placeholder'`, which is why
-Continue cannot fire. The prototype's `sessionStorage` override store is **not** a schema substitute:
-it has no uniqueness constraints, no audit trail and no multi-user semantics. Add a uniqueness
-constraint on the public link id and keep per-link independence when migrating.
+**Page 3 fixture mapping (no database yet).** `ProviderLinkFixture` in `src/lib/link-fixtures.ts` is `server-only`: `id` maps to an internal primary key, `movieSlug` resolves the movie, `optionSlug` is a descriptive public selector, and `targetUrl` maps to the private `target_url`/destination. A future schema must enforce uniqueness for `(movie_id, option_slug)` and never expose link/database IDs or raw targets in public payloads. The persisted lifecycle must still add `pending`/`revoked`, evidence and approval metadata. Every prototype record is `fixture-placeholder`, and activation is also hard-disabled. The isolated v2 session-demo store is not a schema substitute: it has no server writes, audit trail or multi-user semantics.
 
 ### `redirect_daily_counts`
 
@@ -191,7 +184,7 @@ constraint on the public link id and keep per-link independence when migrating.
 | Title search                  | normalized title + PostgreSQL trigram index after extension availability is verified                  |
 | Language/year/quality filters | movie_languages(language_code, movie_id); selective year/quality indexes chosen from EXPLAIN evidence |
 | Admin review                  | external_links(status, review_by), movies(status, updated_at)                                         |
-| Redirect lookup               | PK link ID plus joined movie/destination status checks                                                |
+| Redirect lookup               | Unique movie/option selectors, then internal joined movie/destination status checks                   |
 | Refresh scheduler             | metadata_expires_at partial index for permitted provider-linked records                               |
 | Jobs                          | status/created_at and duplicate-active partial unique index                                           |
 | Auth expiry                   | library-required user/token indexes and session expiry cleanup                                        |

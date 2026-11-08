@@ -2,73 +2,97 @@ import { describe, expect, it } from 'vitest';
 import { MOVIES } from '@/lib/fixtures';
 import {
   LINK_TEMPLATES,
-  PROVIDERS,
+  PUBLIC_LINKS,
+  getPublicLinksForMovie,
+  intermediatePath,
+} from '@/lib/link-catalog';
+import {
   PROVIDER_LINKS,
   getLinkById,
   getLinkForOption,
   getLinksForMovie,
-  intermediatePath,
 } from '@/lib/link-fixtures';
-import { APPROVED_DESTINATION_HOSTS, validateDestinationUrl } from '@/lib/link-policy';
+import {
+  APPROVED_DESTINATION_HOSTS,
+  resolveContinue,
+  validateDestinationUrl,
+} from '@/lib/link-policy';
 import { getMovieDetail } from '@/lib/detail-fixtures';
 
-describe('provider link fixtures', () => {
-  it('gives every movie its own link per quality/watch/provider option', () => {
-    expect(PROVIDER_LINKS).toHaveLength(MOVIES.length * LINK_TEMPLATES.length);
+// Independent expectations for every public choice and its server-only fixture target.
+const expectedMappings = [
+  ['480p', 'alpha.example.com', 'watch', 'q-480'],
+  ['720p-10bit-hevc', 'alpha.example.com', 'watch', 'q-720-hevc'],
+  ['720p-x264', 'alpha.example.com', 'watch', 'q-720-x264'],
+  ['1080p-10bit-hevc', 'beta.example.com', 'watch', 'q-1080-hevc'],
+  ['1080p-x264', 'beta.example.com', 'watch', 'q-1080-x264'],
+  ['1080p-hq', 'beta.example.com', 'watch', 'q-hq-1080'],
+  ['watch-online', 'alpha.example.com', 'watch', 'watch-online'],
+  ['watch-4k', 'beta.example.com', 'watch', 'watch-4k'],
+  ['provider-a', 'alpha.example.com', 'provider', 'provider-a'],
+  ['provider-b', 'beta.example.com', 'provider', 'provider-b'],
+] as const;
+
+describe('server-only provider link fixtures', () => {
+  it('maps every movie and quality/watch/provider choice to the exact independent fixture destination', () => {
+    expect(PROVIDER_LINKS).toHaveLength(MOVIES.length * expectedMappings.length);
+    for (const movie of MOVIES) {
+      for (const [option, host, section, targetKey] of expectedMappings) {
+        const link = getLinkForOption(movie.slug, option);
+        expect(link, `${movie.slug}/${option}`).toBeDefined();
+        const expected = `https://${host}/${section}/${movie.slug}/${targetKey}`;
+        expect(link!.targetUrl).toBe(expected);
+        // Unit-only simulation: no actual redirect or external request is made.
+        expect(
+          resolveContinue(
+            { ...link!, status: 'enabled', authorization: 'approved' },
+            { activationEnabled: true },
+          ),
+        ).toEqual({ action: 'redirect', url: expected });
+      }
+    }
+  });
+
+  it('gives every record a unique server ID and a unique destination', () => {
+    expect(new Set(PROVIDER_LINKS.map((link) => link.id)).size).toBe(PROVIDER_LINKS.length);
+    expect(new Set(PROVIDER_LINKS.map((link) => link.targetUrl)).size).toBe(PROVIDER_LINKS.length);
+    for (const link of PROVIDER_LINKS) {
+      expect(validateDestinationUrl(link.targetUrl).ok).toBe(true);
+      expect(APPROVED_DESTINATION_HOSTS).toContain(new URL(link.targetUrl).hostname);
+      expect(link.authorization).toBe('fixture-placeholder');
+    }
+  });
+
+  it('keeps one disabled link per movie and the first option enabled', () => {
     for (const movie of MOVIES) {
       const links = getLinksForMovie(movie.slug);
       expect(links).toHaveLength(LINK_TEMPLATES.length);
-      expect(new Set(links.map((link) => link.optionKey)).size).toBe(LINK_TEMPLATES.length);
+      expect(links.filter((link) => link.status === 'disabled')).toHaveLength(1);
+      expect(links[0]?.status).toBe('enabled');
     }
   });
 
-  it('uses a unique id and a unique destination for every individual link', () => {
-    expect(new Set(PROVIDER_LINKS.map((link) => link.id)).size).toBe(PROVIDER_LINKS.length);
-    expect(new Set(PROVIDER_LINKS.map((link) => link.targetUrl)).size).toBe(PROVIDER_LINKS.length);
-  });
-
-  it('stores only valid HTTPS destinations on approved fixture hosts', () => {
-    for (const link of PROVIDER_LINKS) {
-      const result = validateDestinationUrl(link.targetUrl);
-      expect(result.ok).toBe(true);
-      expect(APPROVED_DESTINATION_HOSTS).toContain(new URL(link.targetUrl).hostname);
-      expect(PROVIDERS.map((provider) => provider.id)).toContain(link.providerId);
-    }
-  });
-
-  it('keeps exactly one disabled link per movie and never the first option', () => {
-    for (const movie of MOVIES) {
-      const links = getLinksForMovie(movie.slug);
-      const disabled = links.filter((link) => link.status === 'disabled');
-      expect(disabled).toHaveLength(1);
-      expect(disabled[0]?.optionKey).not.toBe(LINK_TEMPLATES[0]?.key);
-    }
-  });
-
-  it('never marks a fixture link as authorized for real redirection', () => {
-    expect(PROVIDER_LINKS.every((link) => link.authorization === 'fixture-placeholder')).toBe(true);
-  });
-
-  it('resolves links by opaque id and rejects unknown ids', () => {
+  it('resolves only known selectors and keeps internal lookup separate', () => {
     const first = PROVIDER_LINKS[0]!;
     expect(getLinkById(first.id)).toEqual(first);
-    expect(intermediatePath(first.id)).toBe(`/go/${first.id}/`);
-    expect(getLinkById('lnk-9999')).toBeUndefined();
-    expect(getLinkById('https://alpha.example.com/watch')).toBeUndefined();
-    expect(getLinkForOption(first.movieSlug, first.optionKey)?.id).toBe(first.id);
+    expect(getLinkForOption(first.movieSlug, first.optionSlug)).toEqual(first);
     expect(getLinkForOption(first.movieSlug, 'does-not-exist')).toBeUndefined();
+    expect(getLinkForOption('https://evil.example.com', '480p')).toBeUndefined();
   });
 
-  it('wires every detail option to its own intermediate link without external hrefs', () => {
-    const detail = getMovieDetail('the-odyssey-protocol-2')!;
-    const options = [...detail.qualityOptions, ...detail.watchOptions, ...detail.providerLinks];
-    expect(options).toHaveLength(LINK_TEMPLATES.length);
-    expect(options.every((option) => option.href === null)).toBe(true);
-    expect(new Set(options.map((option) => option.linkId)).size).toBe(options.length);
-    for (const option of options) {
-      expect(option.linkId).toBeTruthy();
-      expect(getLinkById(option.linkId!)?.movieSlug).toBe(detail.movie.slug);
+  it('exposes only descriptive local paths and safe data to public detail props', () => {
+    expect(JSON.stringify(PUBLIC_LINKS)).not.toMatch(/lnk-\d{4}|https?:\/\//i);
+    for (const movie of MOVIES) {
+      const links = getPublicLinksForMovie(movie.slug);
+      expect(links).toHaveLength(expectedMappings.length);
+      const detail = getMovieDetail(movie.slug)!;
+      const options = [...detail.qualityOptions, ...detail.watchOptions, ...detail.providerLinks];
+      expect(options).toHaveLength(expectedMappings.length);
+      for (const option of options) {
+        expect(option.href).toBe(intermediatePath(movie.slug, option.optionSlug));
+      }
+      expect(JSON.stringify(detail)).not.toMatch(/lnk-\d{4}|https?:\/\//i);
+      expect(detail.trailer.href).toBeNull();
     }
-    expect(detail.trailer.linkId).toBeNull();
   });
 });

@@ -12,7 +12,7 @@ export function MovieGrid({ movies }: MovieGridProps) {
       <h2 className="visually-hidden">Latest releases</h2>
       <ul className={styles.grid}>
         {movies.map((movie, index) => (
-          <li key={movie.id}>
+          <li key={movie.slug}>
             <MovieCard movie={movie} priority={index < 2} />
           </li>
         ))}

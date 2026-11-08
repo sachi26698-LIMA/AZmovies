@@ -21,16 +21,30 @@ async function settled(page) {
   await page.evaluate(async () => {
     await document.fonts.ready;
     await Promise.all(
-      Array.from(document.images).map((img) =>
-        img.complete
-          ? Promise.resolve()
-          : new Promise((resolve) => {
-              img.addEventListener('load', resolve, { once: true });
-              img.addEventListener('error', resolve, { once: true });
-            }),
-      ),
+      Array.from(document.images).map(async (img) => {
+        // A full-page capture includes offscreen images. Eager loading is limited
+        // to this capture page; the application itself retains lazy loading.
+        if (img.loading === 'lazy') img.loading = 'eager';
+        if (!img.complete) {
+          await new Promise((resolve, reject) => {
+            const timeout = window.setTimeout(
+              () => reject(new Error('Image load timed out')),
+              10000,
+            );
+            const finish = () => {
+              window.clearTimeout(timeout);
+              resolve();
+            };
+            img.addEventListener('load', finish, { once: true });
+            img.addEventListener('error', finish, { once: true });
+            if (img.complete) finish();
+          });
+        }
+        if (!img.naturalWidth) throw new Error(`Image failed to load: ${img.currentSrc}`);
+      }),
     );
   });
+  await page.waitForLoadState('networkidle');
 }
 
 async function metrics(page) {
@@ -89,16 +103,14 @@ await page360.locator('article h3 a').first().click();
 await settled(page360);
 await page360.screenshot({ path: `${out}/prototype-360-detail-top.png` });
 await page360.screenshot({ path: `${out}/prototype-360-detail.png`, fullPage: true });
-await page360
-  .getByRole('region', { name: 'Scrollable movie screenshot gallery' })
-  .scrollIntoViewIfNeeded();
+await page360.getByRole('region', { name: 'Movie screenshot gallery' }).scrollIntoViewIfNeeded();
 await settled(page360);
 await page360.screenshot({ path: `${out}/prototype-360-detail-gallery.png` });
 await page360.locator('#quality-options').scrollIntoViewIfNeeded();
 await settled(page360);
 await page360.screenshot({ path: `${out}/prototype-360-detail-options.png` });
 const detailMetrics = await page360.evaluate(() => {
-  const gallery = document.querySelector('[aria-label="Scrollable movie screenshot gallery"]');
+  const gallery = document.querySelector('[aria-label="Movie screenshot gallery"]');
   return {
     url: location.pathname,
     scrollWidth: document.documentElement.scrollWidth,
@@ -108,12 +120,19 @@ const detailMetrics = await page360.evaluate(() => {
     externalLinks: document.querySelectorAll('a[href^="http"]').length,
   };
 });
-// Page 3: read the disabled option id from the detail page, then follow the real
-// journey into the intermediate link page instead of deep-linking to a guessed id.
-const disabledLinkId = await page360
-  .locator('ul[aria-label="Quality option placeholders"] button[aria-disabled="true"]')
+// Follow the actual detail → quality → Page 3 journey. The first fixture movie's
+// disabled quality has a descriptive public path; no internal link ID is captured.
+const movieSlug = new URL(page360.url()).pathname.split('/').filter(Boolean)[1];
+const disabledOptionText = await page360
+  .locator('ul[aria-label="Quality option placeholders"] button:disabled')
   .first()
-  .getAttribute('data-link-id');
+  .innerText();
+const disabledOptionSlug = disabledOptionText
+  .replace('[fixture]', '')
+  .trim()
+  .toLowerCase()
+  .replace(/\s+/g, '-');
+const disabledPath = movieSlug ? `/go/${movieSlug}/${disabledOptionSlug}/` : null;
 await page360.locator('ul[aria-label="Quality option placeholders"] a').first().click();
 await settled(page360);
 await page360.screenshot({ path: `${out}/prototype-360-link-top.png` });
@@ -126,20 +145,22 @@ const linkMetrics = await page360.evaluate(() => {
   return {
     url: location.pathname,
     scrollWidth: document.documentElement.scrollWidth,
-    storedDestination: document.querySelector('[data-testid="stored-destination"]')?.textContent,
-    continueAriaDisabled: button?.getAttribute('aria-disabled') ?? null,
+    continueDisabled: button?.disabled ?? null,
+    visibleFactLabels: Array.from(
+      document.querySelectorAll('[aria-label="Selected link details"] dt'),
+    ).map((item) => item.textContent?.trim()),
     continueRect: rect ? { width: Math.round(rect.width), height: Math.round(rect.height) } : null,
     externalLinks: document.querySelectorAll('a[href^="http"]').length,
     metaRefresh: document.querySelectorAll('meta[http-equiv="refresh"]').length,
   };
 });
-// The Continue control is aria-disabled but explains itself on click; force the
-// pointer action so the captured state shows the real denial message.
-await page360.getByRole('button', { name: /continue/i }).click({ force: true });
-await settled(page360);
+// Continue is natively disabled in prototype mode; the explanation is already visible.
+await page360.getByRole('button', { name: /^continue/i }).scrollIntoViewIfNeeded();
 await page360.screenshot({ path: `${out}/prototype-360-link-continue-denied.png` });
-if (disabledLinkId) {
-  await page360.goto(`${baseURL}/go/${disabledLinkId}/`);
+const firstLinkPath = new URL(page360.url()).pathname;
+if (disabledPath) {
+  const response = await page360.goto(`${baseURL}${disabledPath}`);
+  if (response?.status() !== 200) throw new Error('Disabled fixture capture did not resolve');
   await settled(page360);
   await page360.screenshot({ path: `${out}/prototype-360-link-disabled.png`, fullPage: true });
 }
@@ -169,25 +190,31 @@ await pageAdmin.screenshot({ path: `${out}/prototype-360-admin-links.png`, fullP
 await contextAdmin.close();
 
 const linkCaptures = [];
-for (const width of [768, 1440]) {
+for (const width of [320, 360, 390, 768, 1440]) {
   const context = await browser.newContext({
     viewport: { width, height: 1024 },
     deviceScaleFactor: 1,
     reducedMotion: 'reduce',
   });
   const page = await context.newPage();
-  await page.goto(`${baseURL}/go/lnk-0001/`);
+  await page.goto(`${baseURL}${firstLinkPath}`);
   await settled(page);
-  await page.screenshot({ path: `${out}/prototype-${width}-link-full.png`, fullPage: true });
+  await page.screenshot({ path: `${out}/prototype-${width}-link-responsive.png`, fullPage: true });
+  const linkScrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+  await page.goto(`${baseURL}/movies/${movieSlug}/`);
+  await settled(page);
+  await page.screenshot({ path: `${out}/prototype-${width}-detail-responsive.png` });
   linkCaptures.push({
     width,
-    scrollWidth: await page.evaluate(() => document.documentElement.scrollWidth),
+    linkScrollWidth,
+    detailScrollWidth: await page.evaluate(() => document.documentElement.scrollWidth),
   });
   await context.close();
 }
 
 const captures = [];
 for (const [name, width, height, dpr] of [
+  ['320', 320, 722, 1],
   ['390', 390, 844, 3],
   ['768', 768, 1024, 1],
   ['1440', 1440, 900, 1],
@@ -214,7 +241,7 @@ const report = {
   detail360: detailMetrics,
   link360: linkMetrics,
   admin360: adminMetrics,
-  disabledLinkId,
+  disabledPath,
   linkCaptures,
   captures,
 };

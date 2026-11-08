@@ -2,7 +2,7 @@ import styles from '@/styles/prototype.module.css';
 
 const FOOTER_LINKS = ['Disclaimer', 'Join Our Group!', 'How To Watch?', 'Movie Request Page'];
 
-export function Footer() {
+export function Footer({ showPrototypeNote = true }: { showPrototypeNote?: boolean }) {
   return (
     <footer className={styles.footer}>
       <p className={styles.footerCopyright}>
@@ -21,10 +21,12 @@ export function Footer() {
           </button>
         ))}
       </nav>
-      <p className={styles.footerNote}>
-        Static fixture prototype. No live movie APIs, database, authentication or external
-        redirects.
-      </p>
+      {showPrototypeNote ? (
+        <p className={styles.footerNote}>
+          Static fixture prototype. No live movie APIs, database, authentication or external
+          redirects.
+        </p>
+      ) : null}
     </footer>
   );
 }

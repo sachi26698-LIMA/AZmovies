@@ -1,7 +1,6 @@
 export type PosterVariant = 'epic' | 'odyssey' | 'drama' | 'action' | 'comedy' | 'romance';
 
 export interface MovieFixture {
-  id: string;
   slug: string;
   title: string;
   displayTitle: string;
@@ -52,7 +51,7 @@ const templates: Array<{
   {
     title: 'Aranya: Rise of a Legend',
     poster: 'epic',
-    languages: ['Hindi', 'Multi Audio'],
+    languages: ['Hindi', 'English'],
     categories: ['BOLLYWOOD', 'HINDI', 'DUAL AUDIO'],
   },
   {
@@ -145,11 +144,16 @@ export const MOVIES: MovieFixture[] = Array.from({ length: 48 }, (_, index) => {
   const title = part === 0 ? template.title : `${template.title} ${['II', 'III', 'IV'][part - 1]}`;
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, '-')}-${index + 1}`;
   const languageText = template.languages.join(' + ');
+  const audioLabel =
+    template.languages.length > 2
+      ? `Multi Audio [${languageText}]`
+      : template.languages.length === 2
+        ? `Dual Audio [${languageText}]`
+        : `${languageText} Audio`;
   return {
-    id: `fixture-${String(index + 1).padStart(3, '0')}`,
     slug,
     title,
-    displayTitle: `${title} (${year}) Dual Audio [${languageText}] ${quality} | 720p | 1080p`,
+    displayTitle: `${title} (${year}) ${audioLabel} ${quality} | 720p | 1080p`,
     year,
     languages: template.languages,
     quality,

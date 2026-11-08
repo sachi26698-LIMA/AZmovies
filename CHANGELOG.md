@@ -2,13 +2,24 @@
 
 All notable completed project changes are recorded here. This is a phase-controlled project, not a claim of released software versions. Dates use YYYY-MM-DD.
 
+## [Unreleased] — Final Phase 2 refinement (sandbox clock 2026-11-08)
+
+- Matched homepage category geometry and poster proportions more closely to the supplied MOVIES4U reference; refined detail typography, metadata, option rows and continuous screenshot stack.
+- Replaced public internal-ID paths with descriptive movie/option selectors. Moved 480 synthetic records and their destination URLs behind Next's `server-only` boundary; Page 3 receives only a safe summary and Continue is natively disabled.
+- Converted the owner-selected link manager to an isolated session demo: CRUD actions do not alter public pages/server mappings, and the test-destination field is validated then discarded. Old v1 session data is untouched.
+- Added repeatable public-build payload scanning and live HTML/JS/RSC privacy checks, plus a bounded screenshot image wait. Removed an inactive floating overlay from Page 3 to keep the handoff uncluttered.
+- Final sandbox results: 52/52 Vitest, 36/36 Chromium, 3/3 axe subset, 19/19 responsive subset; build 532 static pages; public-boundary scan 19 static assets/2,660 HTML/RSC files; runtime audit 0. Reference comparison and 320/360/390/768/1440 captures were regenerated. No live redirects, database or authentication were added.
+- Owner reported the local preview is visible; the unauthenticated external 403 remains a separate unresolved gateway observation. No push or Phase 3 approval.
+
 ## [Unreleased] — Preview gateway investigation (open)
 
 - A direct external request without a traffic-access header reached the E2B proxy and returned 403 “Missing traffic access token”; the actual Arena iframe request and proxy logs have not been observed.
 - The three application pages rendered in a simulated local iframe with no observed browser or asset errors. This is not a visual verification of the user's Arena preview.
-- No UI or application code was changed. Preview remains blocked pending investigation of the authenticated gateway and an owner-visible retest (BUG-014).
+- No UI or application code was changed for the proxy diagnosis. The owner subsequently confirmed local preview visibility; unauthenticated public access and the earlier iframe failure remain separately unverified (BUG-014).
 
 ## [Unreleased] — 2026-11-08 — Page 3 intermediate external link page
+
+**Historical checkpoint, superseded by the final refinement above:** the earlier ID-based routes, displayed stored URL and public-facing manager behavior described here are no longer current.
 
 ### Added
 

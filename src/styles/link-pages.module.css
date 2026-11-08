@@ -145,8 +145,9 @@
   font-weight: 700;
 }
 
-.continueButton[aria-disabled='true'] {
+.continueButton:disabled {
   cursor: not-allowed;
+  opacity: 0.82;
 }
 
 .actionNote {

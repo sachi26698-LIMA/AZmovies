@@ -1,6 +1,6 @@
 # AZmovies — Security and Content Authorization
 
-**Phase 2 status:** static fixture prototype only. `npm run verify:static` passed; no API/database/auth/external redirect is implemented; Telegram/app/footer controls are inert; pages are marked noindex. Runtime `npm audit --omit=dev` reported 0 vulnerabilities at execution time. Production headers, auth, CSRF, redirect policy and secret-scanning gates below remain future requirements, not completed production claims.
+**Phase 2 status:** static fixtures only. A server-only link inventory, locked default-deny route and isolated session demo exist; no catalog API, database, authentication or active external redirect exists. Telegram/app/footer controls are inert, pages are noindex, static/public-boundary checks passed, and runtime `npm audit --omit=dev` reported 0 vulnerabilities. Production headers, auth, CSRF, live-redirect and secret-scanning gates remain future requirements.
 
 **Status:** required design controls, not implemented or audited. No production security claim is made in Phase 1. The GitHub repository is public; protect credentials and private content accordingly.
 
@@ -52,7 +52,7 @@ A redirect is publishable only when all of these hold:
 5. Path matches the approved segment-boundary prefix where configured. Reject ambiguous/double-encoded traversal; do not make allowlist decisions with string suffix checks.
 6. Caller cannot supply/override the target through query, body, headers or an open-return URL.
 
-Use opaque `/r/{linkId}` lookups and fresh checks at click time. Return 303 with `Cache-Control: no-store` and restrictive referrer policy. Missing/denied links get a safe error page, not a fallback redirect. UI external links use `noopener noreferrer` when opening a new tab.
+Resolve descriptive movie/option selectors to internal records on the server and perform fresh checks at click time. Keep database/link IDs, evidence and stored targets out of public pages and payloads. After explicit approval only, a successful redirect may return 303 with `Cache-Control: no-store` and restrictive referrer policy. Missing/denied links get a safe error page, not a fallback redirect.
 
 Do not permit wildcard subdomains, URL shorteners, user-controlled hosting paths, HTTP, `javascript:`, `data:`, `file:`, magnets, torrent files or direct movie downloads. An official provider's domain does not authorize every user-generated path on that domain.
 
@@ -62,19 +62,11 @@ The Telegram URL is separately restricted to HTTPS and the exact `t.me` host (or
 
 ### Implemented Page 3 controls and their limits (2026-11-08)
 
-Enforced in code and covered by tests: exact-host allowlist (no suffix/wildcard/subdomain matching);
-HTTPS only; no userinfo; default port only; no control characters/backslashes; 2048-character bound;
-raw-path rejection of `.`/`..`/`%2e`/`%2f`/`%5c`/`%25` before URL normalization; opaque id validation;
-enabled-status check; per-link authorization check; hard-coded owner activation switch set to `false`.
-`/r/{linkId}/` answers 404/410/403 with no `Location` header while locked, and sends `no-store`,
-`no-referrer`, `noindex` and `nosniff`. Neither `/go/` nor `/r/` reads a destination from query,
-headers, cookies or body. No auto-redirect, countdown, pop-up or `meta refresh` exists.
+Enforced in code and covered by tests: exact-host HTTPS allowlist; no userinfo, nonstandard ports, control characters or backslashes; a 2048-character bound; raw/encoded traversal rejection; internal record ID/status and per-link authorization checks; and a hard-coded activation switch set to `false`. The Next `server-only` marker prevents importing the inventory into client components. Page 3 constructs a minimal safe view model, and Continue is natively disabled. The descriptive `/r/{movieSlug}/{optionSlug}/` route answers 404/410/403 with no `Location` while locked and sends `no-store`, `no-referrer`, `noindex` and `nosniff`. No request field supplies the target; no auto-redirect, countdown, pop-up or `meta refresh` exists.
 
-**Known prototype limitation — must not ship to production as-is:** `/admin/links/` is a public,
-unauthenticated fixture editor backed by `sessionStorage`. It cannot write to a server or activate a
-destination, and it is `noindex`, but it is not access-controlled. Real admin authentication,
-server-side authorization, persistence, per-link evidence and audit logging are later-phase
-requirements (BLK-014).
+The final build scan checked 19 static assets and 2,660 generated HTML/RSC payloads for known synthetic fixture IDs and destinations. Live browser tests also inspected HTML, JavaScript and navigation RSC. This signature check is not a general-purpose secret scanner or penetration test.
+
+**Known prototype limitation — must not ship to production as-is:** `/admin/links/` is a public, unauthenticated isolated session demo. It validates and discards the test-destination field and cannot change a public page, server record or activation. The old v1 session key is neither read nor deleted and may retain historical data until the older tab session ends. Real admin authentication, server authorization, persistence, per-link evidence and audit logging remain later-phase requirements (BLK-014).
 
 ## 6. Content and metadata permission
 

@@ -117,16 +117,16 @@
 }
 
 .titlePanel {
-  margin: 16px 0;
-  padding: 16px;
-  border-radius: 8px;
+  margin: 14px 0;
+  padding: 12px;
+  border-radius: 4px;
   background: #141414;
 }
 
 .title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 600;
   line-height: 1.3;
 }
 
@@ -197,8 +197,8 @@
 }
 
 .infoTitle {
-  margin: 0 0 12px;
-  font-size: 20px;
+  margin: 0 0 10px;
+  font-size: 18px;
   font-weight: 700;
 }
 
@@ -207,9 +207,10 @@
 }
 
 .infoRow {
-  margin: 10px 0;
+  margin: 6px 0;
   color: #c3c3c3;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .infoRow dt {
@@ -243,8 +244,7 @@
 .gallery {
   display: grid;
   gap: 2px;
-  max-height: 420px;
-  overflow-y: auto;
+  margin: 0 4px;
   background: #000000;
 }
 
@@ -257,7 +257,8 @@
 }
 
 .optionsSection {
-  margin: 24px 0;
+  width: 90%;
+  margin: 24px auto;
 }
 
 .sectionTitle {
@@ -275,7 +276,7 @@
 }
 
 .optionItem {
-  padding: 18px 0;
+  padding: 14px 0;
   border-top: 2px solid #373737;
   text-align: center;
 }
@@ -291,12 +292,29 @@
   background: transparent;
   color: #0084eb;
   font-size: 18px;
-  font-weight: 700;
-  font-style: italic;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .optionLinkTeal {
   color: #00c8b4;
+}
+
+.optionEmphasis {
+  font-style: italic;
+}
+
+.optionTag {
+  color: #c3c3c3;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+}
+
+.optionLink:disabled,
+.optionLinkTeal:disabled {
+  color: #a3afba;
+  cursor: not-allowed;
 }
 
 .providerNote {

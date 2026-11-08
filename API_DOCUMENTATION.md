@@ -1,11 +1,11 @@
 # AZmovies — Planned API Contract
 
-**Status:** specification only. No endpoint below is implemented. Phase 2 static-boundary testing verified that `/api/movies` returns 404 and the prototype exposes no catalog API or external movie links. Final route files and DTO schemas must match this document when introduced. Examples are synthetic, not live movie/provider data.
+**Status:** the catalog/auth/admin API contracts below are planned, not implemented. Phase 2 does implement a locked fixture handoff route and intermediate page, documented in §3. Static-boundary testing verified `/api/movies` returns 404; no external movie link is active. Examples are synthetic, not live provider data.
 
 ## 1. General conventions
 
 - Same-origin Next.js Route Handlers; browser code uses relative URLs.
-- JSON UTF-8; timestamps ISO 8601 UTC; IDs opaque strings; slugs lowercase.
+- JSON UTF-8; timestamps ISO 8601 UTC; public selectors are descriptive lowercase slugs. Internal link/database IDs, targets and authorization evidence stay server-side.
 - Validate query/body/params with shared Zod schemas. Unknown write fields are rejected, not silently elevated into privileges.
 - Public reads expose published movies and approved public link actions only. Authorization evidence, target URLs, user records, provider credentials and job internals stay private.
 - Admin endpoints validate a live session, admin role, origin/CSRF and request size on the server. Proxy cookie checks are not sufficient.
@@ -50,7 +50,6 @@ Synthetic response:
 {
   "data": [
     {
-      "id": "movie_01",
       "slug": "sample-film",
       "title": "Sample Film",
       "releaseYear": 2024,
@@ -76,7 +75,7 @@ Out-of-range pages return an empty data array with truthful pagination, or a doc
 
 ### `GET /api/movies/{slug}`
 
-Returns a published movie's factual metadata, poster information and approved external-action descriptors. Draft/archived/missing slugs all return the same public 404 shape. An authorized action exposes `/r/{linkId}`, provider label and territory/expiry caveats, not evidence or raw destination details.
+Returns a published movie's factual metadata, poster information and approved external-action descriptors. Draft/archived/missing slugs all return the same public 404 shape. A future authorized action exposes descriptive movie/option paths, provider label and territory/expiry caveats, never internal link/database IDs, evidence or raw destination details.
 
 ### `GET /api/categories` and `GET /api/languages`
 
@@ -88,11 +87,11 @@ Liveness returns only process status. Readiness checks required local dependenci
 
 ## 3. External redirect
 
-### `GET /r/{linkId}`
+### `GET /r/{movieSlug}/{optionSlug}/` (future activation contract)
 
 Not a JSON API and not an arbitrary redirect parameter.
 
-- Validate opaque ID; load movie/link/destination in one consistent policy check.
+- Resolve known descriptive selectors; load the internal movie/link/destination in one consistent server-side policy check.
 - Require published movie, approved unexpired link, active exact destination and safe canonical HTTPS target.
 - Success: 303 to stored target, `Cache-Control: no-store`, restrictive referrer policy; aggregate anonymous count if implemented.
 - Missing/revoked/unapproved/expired/unsafe links: safe 404 or 410 page without leaking private target/evidence. Choose stable semantics during Phase 4.
@@ -101,30 +100,22 @@ Not a JSON API and not an arbitrary redirect parameter.
 
 The UI may open this route in a new tab with `noopener noreferrer` and an accessible indication. Telegram is a separately validated owner-configured HTTPS link, not a movie redirect record.
 
-### Implemented prototype behaviour (2026-11-08)
+### Implemented prototype behaviour (final Phase 2)
 
-`GET /go/{linkId}/` — Page 3 HTML screen (not JSON). Shows movie title, selected quality, option
-label, provider name, link status, link reference and the stored destination as plain text. Reads
-**only** the path id; `?url=`/`?target=` are ignored. Unknown/removed ids render a safe
-"Link not available" panel with no destination.
+`GET /go/{movieSlug}/{optionSlug}/` renders only movie title, selected quality, provider and Continue state. The Continue button is natively disabled. Invalid selections return 404; disabled selections show an unavailable message. No internal link/database ID or stored destination is serialized to the public page. Query-supplied destinations are ignored.
 
-`GET /r/{linkId}/` — implemented and locked. Status semantics currently shipped:
+`GET /r/{movieSlug}/{optionSlug}/` resolves a known selection server-side and is locked:
 
-| Condition                                           | Status | Location header        |
-| --------------------------------------------------- | ------ | ---------------------- |
-| Unknown or malformed id                             | 404    | none                   |
-| Link disabled by admin                              | 410    | none                   |
-| Destination fails policy                            | 403    | none                   |
-| Owner activation disabled (prototype default)       | 403    | none                   |
-| Link not authorized (all fixtures)                  | 403    | none                   |
-| Every check passes (not reachable in the prototype) | 303    | exact stored HTTPS URL |
+| Condition                                 | Status                                                  | Location header           |
+| ----------------------------------------- | ------------------------------------------------------- | ------------------------- |
+| Unknown selector                          | 404                                                     | none                      |
+| Disabled fixture                          | 410                                                     | none                      |
+| Unsafe destination or activation disabled | 403                                                     | none                      |
+| All future approval gates pass            | 303 in policy design only; unreachable in the prototype | approved stored HTTPS URL |
 
-All responses send `Cache-Control: no-store, max-age=0`, `Referrer-Policy: no-referrer`,
-`X-Robots-Tag: noindex, nofollow`, `X-Content-Type-Options: nosniff`. Query parameters, headers,
-cookies and bodies are never read as a destination.
+Responses send `Cache-Control: no-store, max-age=0`, `Referrer-Policy: no-referrer`, `X-Robots-Tag: noindex, nofollow` and `X-Content-Type-Options: nosniff`. Query parameters, headers, cookies and bodies are never read as a destination.
 
-`/admin/links/` is a **prototype UI only** — there are no admin API endpoints, no authentication and
-no persistence yet. The private admin contracts in §5 remain unimplemented.
+`/admin/links/` is an **isolated unauthenticated session demo**, not an admin API or persisted editor. Its test URL is validated and discarded; changes never alter public pages or server records. The private admin contracts in §5 remain unimplemented.
 
 ## 4. Authentication endpoints
 

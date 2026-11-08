@@ -4,7 +4,7 @@
  * Default deny. A destination is usable only when it is canonical HTTPS on an
  * exactly allowlisted host, and the individual link is enabled, authorized and
  * activated by the owner. No caller-supplied URL is ever accepted here: the only
- * input is a stored link record looked up by opaque id.
+ * input is a server record resolved from a known public movie and option.
  */
 
 export const APPROVED_DESTINATION_HOSTS = ['alpha.example.com', 'beta.example.com'] as const;

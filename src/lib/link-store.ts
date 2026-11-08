@@ -1,18 +1,21 @@
 'use client';
 
 import { useMemo, useSyncExternalStore } from 'react';
-import { PROVIDER_LINKS, type LinkKind, type ProviderLinkFixture } from '@/lib/link-fixtures';
+import { PUBLIC_LINKS, type LinkKind, type PublicLinkFixture } from '@/lib/link-catalog';
 import type { LinkStatus } from '@/lib/link-policy';
 
 /**
- * Browser-session fixture overrides for the prototype link manager.
- *
- * This is NOT a database and NOT an admin backend: nothing is written to a server,
- * there is no authentication, and the values disappear with the browser tab session.
- * It exists so the owner can exercise add/edit/disable/delete behaviour on fixture
- * data before the real authenticated, persisted admin arrives in a later phase.
+ * Isolated browser-session demo state. It contains no server link IDs or stored
+ * destinations, and changes here never alter the public catalog or server mapping.
+ * URL input is validated in the manager and then discarded, not saved here.
  */
-export const LINK_STORAGE_KEY = 'azmovies.prototype.links.v1';
+export const LINK_STORAGE_KEY = 'azmovies.prototype.link-demo.v2';
+
+export interface DemoLink extends PublicLinkFixture {
+  demoKey: string;
+  draftOnly: boolean;
+  hasValidatedDraft: boolean;
+}
 
 export interface LinkOverride {
   deleted?: boolean;
@@ -20,21 +23,59 @@ export interface LinkOverride {
   quality?: string;
   providerId?: string;
   providerName?: string;
-  targetUrl?: string;
   status?: LinkStatus;
+  hasValidatedDraft?: boolean;
 }
 
 export interface LinkOverrideState {
   overrides: Record<string, LinkOverride>;
-  added: ProviderLinkFixture[];
+  added: DemoLink[];
 }
 
 export const EMPTY_LINK_STATE: LinkOverrideState = { overrides: {}, added: [] };
 
-const CHANGE_EVENT = 'azmovies:link-overrides';
+const CHANGE_EVENT = 'azmovies:link-demo';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** This key is made from public descriptors and is only used inside the demo. */
+export function demoKeyFor(link: PublicLinkFixture): string {
+  return `${link.movieSlug}/${link.optionSlug}`;
+}
+
+function parseAdded(value: unknown): DemoLink | undefined {
+  if (!isRecord(value)) return undefined;
+  if (
+    typeof value.demoKey !== 'string' ||
+    !value.demoKey.startsWith('draft/') ||
+    typeof value.movieSlug !== 'string' ||
+    typeof value.movieTitle !== 'string' ||
+    typeof value.label !== 'string' ||
+    typeof value.quality !== 'string' ||
+    typeof value.providerId !== 'string' ||
+    typeof value.providerName !== 'string' ||
+    (value.status !== 'enabled' && value.status !== 'disabled')
+  ) {
+    return undefined;
+  }
+  return {
+    demoKey: value.demoKey,
+    movieSlug: value.movieSlug,
+    movieTitle: value.movieTitle,
+    optionSlug: 'draft',
+    kind: 'provider',
+    label: value.label,
+    quality: value.quality,
+    providerId: value.providerId,
+    providerName: value.providerName,
+    status: value.status,
+    note: 'Isolated demo draft; it does not publish a provider link.',
+    emphasized: false,
+    draftOnly: true,
+    hasValidatedDraft: value.hasValidatedDraft === true,
+  };
 }
 
 export function parseLinkState(raw: string): LinkOverrideState {
@@ -44,7 +85,7 @@ export function parseLinkState(raw: string): LinkOverrideState {
     if (!isRecord(parsed)) return EMPTY_LINK_STATE;
     const overrides: Record<string, LinkOverride> = {};
     if (isRecord(parsed.overrides)) {
-      for (const [id, value] of Object.entries(parsed.overrides)) {
+      for (const [key, value] of Object.entries(parsed.overrides)) {
         if (!isRecord(value)) continue;
         const entry: LinkOverride = {};
         if (value.deleted === true) entry.deleted = true;
@@ -52,19 +93,13 @@ export function parseLinkState(raw: string): LinkOverrideState {
         if (typeof value.quality === 'string') entry.quality = value.quality;
         if (typeof value.providerId === 'string') entry.providerId = value.providerId;
         if (typeof value.providerName === 'string') entry.providerName = value.providerName;
-        if (typeof value.targetUrl === 'string') entry.targetUrl = value.targetUrl;
         if (value.status === 'enabled' || value.status === 'disabled') entry.status = value.status;
-        overrides[id] = entry;
+        if (value.hasValidatedDraft === true) entry.hasValidatedDraft = true;
+        overrides[key] = entry;
       }
     }
     const added = Array.isArray(parsed.added)
-      ? parsed.added.filter(
-          (item): item is ProviderLinkFixture =>
-            isRecord(item) &&
-            typeof item.id === 'string' &&
-            typeof item.movieSlug === 'string' &&
-            typeof item.targetUrl === 'string',
-        )
+      ? parsed.added.map(parseAdded).filter((item): item is DemoLink => Boolean(item))
       : [];
     return { overrides, added };
   } catch {
@@ -84,14 +119,15 @@ export function readRawLinkState(): string {
 export function writeLinkState(state: LinkOverrideState): void {
   if (typeof window === 'undefined') return;
   try {
-    const raw = JSON.stringify(state);
+    // Strip unexpected properties before storing; the test-destination field is never persisted.
+    const raw = JSON.stringify(parseLinkState(JSON.stringify(state)));
     if (raw === JSON.stringify(EMPTY_LINK_STATE)) {
       window.sessionStorage.removeItem(LINK_STORAGE_KEY);
     } else {
       window.sessionStorage.setItem(LINK_STORAGE_KEY, raw);
     }
   } catch {
-    // Storage may be unavailable (private mode/quota). The prototype stays usable.
+    // Storage may be unavailable (private mode/quota). The demo stays usable.
   }
   window.dispatchEvent(new Event(CHANGE_EVENT));
 }
@@ -106,14 +142,17 @@ export function subscribeToLinkState(onChange: () => void): () => void {
   };
 }
 
-export function applyLinkOverrides(
-  state: LinkOverrideState,
-  base: ProviderLinkFixture[] = PROVIDER_LINKS,
-): ProviderLinkFixture[] {
-  const merged = base
-    .filter((link) => !state.overrides[link.id]?.deleted)
+export function applyLinkOverrides(state: LinkOverrideState): DemoLink[] {
+  const base: DemoLink[] = PUBLIC_LINKS.map((link) => ({
+    ...link,
+    demoKey: demoKeyFor(link),
+    draftOnly: false,
+    hasValidatedDraft: false,
+  }));
+  return [...base, ...state.added]
+    .filter((link) => !state.overrides[link.demoKey]?.deleted)
     .map((link) => {
-      const override = state.overrides[link.id];
+      const override = state.overrides[link.demoKey];
       if (!override) return link;
       return {
         ...link,
@@ -121,33 +160,14 @@ export function applyLinkOverrides(
         quality: override.quality ?? link.quality,
         providerId: override.providerId ?? link.providerId,
         providerName: override.providerName ?? link.providerName,
-        targetUrl: override.targetUrl ?? link.targetUrl,
         status: override.status ?? link.status,
+        hasValidatedDraft: override.hasValidatedDraft ?? link.hasValidatedDraft,
       };
     });
-  const added = state.added
-    .filter((link) => !state.overrides[link.id]?.deleted)
-    .map((link) => {
-      const override = state.overrides[link.id];
-      if (!override) return link;
-      return {
-        ...link,
-        label: override.label ?? link.label,
-        quality: override.quality ?? link.quality,
-        providerName: override.providerName ?? link.providerName,
-        targetUrl: override.targetUrl ?? link.targetUrl,
-        status: override.status ?? link.status,
-      };
-    });
-  return [...merged, ...added];
 }
 
-export function resolveStoredLink(
-  state: LinkOverrideState,
-  linkId: string,
-): ProviderLinkFixture | undefined {
-  if (state.overrides[linkId]?.deleted) return undefined;
-  return applyLinkOverrides(state).find((link) => link.id === linkId);
+export function resolveDemoLink(state: LinkOverrideState, demoKey: string): DemoLink | undefined {
+  return applyLinkOverrides(state).find((link) => link.demoKey === demoKey);
 }
 
 export function useLinkState(): LinkOverrideState {
@@ -163,30 +183,31 @@ export interface NewLinkInput {
   quality: string;
   providerId: string;
   providerName: string;
-  targetUrl: string;
   status: LinkStatus;
+  hasValidatedDraft: boolean;
 }
 
-export function createCustomLink(input: NewLinkInput, existingIds: string[]): ProviderLinkFixture {
-  let counter = existingIds.filter((id) => id.startsWith('lnk-c')).length + 1;
-  let id = `lnk-c${String(counter).padStart(4, '0')}`;
-  while (existingIds.includes(id)) {
+export function createCustomLink(input: NewLinkInput, existingKeys: string[]): DemoLink {
+  let counter = 1;
+  let demoKey = `draft/${input.movieSlug}/${counter}`;
+  while (existingKeys.includes(demoKey)) {
     counter += 1;
-    id = `lnk-c${String(counter).padStart(4, '0')}`;
+    demoKey = `draft/${input.movieSlug}/${counter}`;
   }
   return {
-    id,
+    demoKey,
     movieSlug: input.movieSlug,
     movieTitle: input.movieTitle,
+    optionSlug: 'draft',
     kind: input.kind,
-    optionKey: id,
     label: input.label,
     quality: input.quality,
     providerId: input.providerId,
     providerName: input.providerName,
-    targetUrl: input.targetUrl,
     status: input.status,
-    authorization: 'fixture-placeholder',
-    note: 'Custom prototype link. No authorization evidence recorded.',
+    note: 'Isolated demo draft; it does not publish a provider link.',
+    emphasized: false,
+    draftOnly: true,
+    hasValidatedDraft: input.hasValidatedDraft,
   };
 }

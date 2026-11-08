@@ -2,7 +2,7 @@
 
 ## Current checkpoint
 
-**Phase 1: foundation only. Website implementation is not approved.** The repository contains documentation and environment/Git preparation, not a runnable application. Do not create application routes, install a frontend, or substitute a demo site for the requested reference design.
+**Phase 2: static-fixture prototype, final owner review pending.** The homepage, movie detail, intermediate handoff and isolated session-demo manager exist locally. Do not begin Phase 3, add a live backend or activate external destinations without explicit owner approval.
 
 ## Read before changing anything
 
@@ -17,8 +17,8 @@
 
 - Brand is **AZmovies**. The supplied MOVIES4U screenshots are a visual reference, not a source of copied code, logos or copyrighted poster assets.
 - This is a movie discovery catalog and approved external-page redirect portal. Never host, stream, embed, distribute or link to unauthorized movie downloads, torrents, magnets or piracy pages.
-- An external URL is not publishable merely because it is HTTPS. Require destination allowlisting, per-link authorization evidence and administrative approval.
-- Preserve the compact dark header, search, horizontal categories, two-column poster grid, specified metadata, pagination, sidebar, footer and configured Telegram link. Do not add heroes, carousels, advertising panels or download buttons.
+- An external URL is not publishable merely because it is HTTPS. Require destination allowlisting, per-link authorization evidence and administrative approval. Public users must not receive internal link/database IDs or raw stored targets; the Phase 2 manager is an isolated demo that cannot change the server mapping.
+- Preserve the compact dark header, search, categories, two-column poster grid, specified metadata, pagination, sidebar and footer. Keep the existing reference-derived detail poster strip; do not add unrelated heroes, carousels, ads or download buttons. Telegram remains inert until configured and approved.
 - TMDB is a candidate, not an authorized dependency yet. Its current terms require review and potentially a written commercial agreement. Keep live integration disabled until the owner confirms permission. Manual catalog operation must not depend on TMDB.
 
 ## Scope and file discipline

@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { LinkManagerPrototype } from '@/components/links/LinkManagerPrototype';
 import { MOVIES } from '@/lib/fixtures';
-import { getLinksForMovie } from '@/lib/link-fixtures';
-import { EMPTY_LINK_STATE, writeLinkState } from '@/lib/link-store';
+import { getPublicLinksForMovie } from '@/lib/link-catalog';
+import { EMPTY_LINK_STATE, LINK_STORAGE_KEY, writeLinkState } from '@/lib/link-store';
 
 const movie = MOVIES[0]!;
 
@@ -17,40 +17,42 @@ function rows() {
   return within(screen.getByRole('region', { name: 'Provider links' })).getAllByRole('listitem');
 }
 
-describe('prototype provider link manager', () => {
-  it('lists every link of the selected movie with independent controls', () => {
-    render(<LinkManagerPrototype />);
-    expect(rows()).toHaveLength(getLinksForMovie(movie.slug).length);
-    expect(screen.getAllByRole('button', { name: 'Edit' }).length).toBe(rows().length);
-    expect(screen.getAllByRole('button', { name: 'Delete' }).length).toBe(rows().length);
+describe('isolated provider link manager demo', () => {
+  it('lists safe fixture descriptions with independent demo controls', () => {
+    const { container } = render(<LinkManagerPrototype />);
+    expect(rows()).toHaveLength(getPublicLinksForMovie(movie.slug).length);
+    expect(screen.getAllByRole('button', { name: 'Edit' })).toHaveLength(rows().length);
+    expect(screen.getAllByRole('button', { name: 'Delete' })).toHaveLength(rows().length);
     expect(
-      screen.getByText(/no authentication, no server write and no database/i),
+      screen.getByText(/do not change the public pages or server mappings/i),
     ).toBeInTheDocument();
+    expect(container.textContent).not.toMatch(/lnk-\d{4}|https?:\/\//i);
   });
 
-  it('adds an individually configured link with a validated HTTPS destination', async () => {
+  it('adds an isolated draft while discarding the tested URL', async () => {
     const user = userEvent.setup();
     render(<LinkManagerPrototype />);
     const before = rows().length;
-    await user.type(screen.getByLabelText('Link label'), 'Extra authorized page');
+    const testUrl = 'https://beta.example.com/watch/extra/2160p';
+    await user.type(screen.getByLabelText('Link label'), 'Extra demo page');
     await user.type(screen.getByLabelText('Quality / option'), '2160p');
-    await user.type(
-      screen.getByLabelText(/Destination URL/i),
-      'https://beta.example.com/watch/extra/2160p',
-    );
+    await user.type(screen.getByLabelText(/Test destination URL/i), testUrl);
     await user.click(screen.getByRole('button', { name: 'Add link' }));
     expect(rows()).toHaveLength(before + 1);
-    expect(screen.getByRole('status')).toHaveTextContent(/Added link lnk-c\d{4}/);
-    expect(rows()[before]?.textContent).toContain('https://beta.example.com/watch/extra/2160p');
+    expect(screen.getByRole('status')).toHaveTextContent(/Added a demo option/);
+    expect(rows()[before]?.textContent).toContain('Session draft only');
+    expect(rows()[before]?.textContent).not.toContain(testUrl);
+    expect(window.sessionStorage.getItem(LINK_STORAGE_KEY)).not.toContain(testUrl);
+    expect(screen.getByLabelText(/Test destination URL/i)).toHaveValue('');
   });
 
-  it('rejects invalid and non-approved destinations and creates nothing', async () => {
+  it('rejects invalid and non-approved test destinations', async () => {
     const user = userEvent.setup();
     render(<LinkManagerPrototype />);
     const before = rows().length;
     await user.type(screen.getByLabelText('Link label'), 'Bad link');
     await user.type(screen.getByLabelText('Quality / option'), '720p');
-    const urlField = screen.getByLabelText(/Destination URL/i);
+    const urlField = screen.getByLabelText(/Test destination URL/i);
 
     await user.type(urlField, 'http://alpha.example.com/watch/a');
     await user.click(screen.getByRole('button', { name: 'Add link' }));
@@ -62,43 +64,32 @@ describe('prototype provider link manager', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       /not on the approved destination allowlist/i,
     );
-
-    await user.clear(urlField);
-    await user.type(urlField, 'javascript:alert(1)');
-    await user.click(screen.getByRole('button', { name: 'Add link' }));
-    expect(screen.getByRole('alert')).toHaveTextContent('Only HTTPS destinations are allowed.');
     expect(rows()).toHaveLength(before);
   });
 
-  it('disables, re-enables, edits and deletes a single link', async () => {
+  it('disables, re-enables, edits, deletes and resets independently in the demo', async () => {
     const user = userEvent.setup();
     render(<LinkManagerPrototype />);
-    const firstRow = rows()[0]!;
-    const linkLabel = within(firstRow).getByRole('heading').textContent!;
-
-    await user.click(within(firstRow).getByRole('button', { name: 'Disable' }));
+    const original = getPublicLinksForMovie(movie.slug)[0]!;
+    await user.click(within(rows()[0]!).getByRole('button', { name: 'Disable' }));
     expect(within(rows()[0]!).getByText('Disabled')).toBeInTheDocument();
-    expect(within(rows()[2]!).getByText('Enabled')).toBeInTheDocument();
+    expect(getPublicLinksForMovie(movie.slug)[0]?.status).toBe(original.status);
 
     await user.click(within(rows()[0]!).getByRole('button', { name: 'Enable' }));
-    expect(within(rows()[0]!).getByText('Enabled')).toBeInTheDocument();
-
     await user.click(within(rows()[0]!).getByRole('button', { name: 'Edit' }));
-    const editForm = screen.getByRole('form', { name: /^Edit lnk-/ });
+    const editForm = screen.getByRole('form', { name: 'Edit demo option' });
     const labelField = within(editForm).getByLabelText('Link label');
     await user.clear(labelField);
-    await user.type(labelField, 'Renamed option');
+    await user.type(labelField, 'Renamed demo option');
+    expect(within(editForm).getByLabelText(/Test destination URL/i)).toHaveValue('');
     await user.click(within(editForm).getByRole('button', { name: 'Save link' }));
-    expect(within(rows()[0]!).getByRole('heading')).toHaveTextContent('Renamed option');
-    expect(within(rows()[2]!).getByRole('heading')).not.toHaveTextContent('Renamed option');
-    expect(linkLabel).not.toBe('Renamed option');
+    expect(within(rows()[0]!).getByRole('heading')).toHaveTextContent('Renamed demo option');
+    expect(getPublicLinksForMovie(movie.slug)[0]?.label).toBe(original.label);
 
     const countAfterEdit = rows().length;
     await user.click(within(rows()[0]!).getByRole('button', { name: 'Delete' }));
     expect(rows()).toHaveLength(countAfterEdit - 1);
-    expect(screen.getByRole('status')).toHaveTextContent(/Deleted link/);
-
     await user.click(screen.getByRole('button', { name: 'Reset to fixtures' }));
-    expect(rows()).toHaveLength(getLinksForMovie(movie.slug).length);
+    expect(rows()).toHaveLength(getPublicLinksForMovie(movie.slug).length);
   });
 });

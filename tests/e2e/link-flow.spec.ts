@@ -1,186 +1,232 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { PROVIDER_LINKS, getLinkById } from '@/lib/link-fixtures';
+import { MOVIES } from '@/lib/fixtures';
+import { PUBLIC_LINKS, continuePath, intermediatePath } from '@/lib/link-catalog';
 
-const firstLink = getLinkById('lnk-0001')!; // movie 1, 480p, provider Alpha, enabled
-const disabledLink = PROVIDER_LINKS.find((link) => link.status === 'disabled')!;
-const betaLink = getLinkById('lnk-0004')!; // same movie, 1080p HEVC, provider Beta
-const otherMovieLink = getLinkById('lnk-0011')!; // second movie, 480p
+const firstMovie = MOVIES[0]!;
+const movieLinks = PUBLIC_LINKS.filter((link) => link.movieSlug === firstMovie.slug);
+const firstLink = movieLinks.find((link) => link.kind === 'quality' && link.status === 'enabled')!;
+const disabledLink = movieLinks.find((link) => link.status === 'disabled')!;
 
-test('homepage → detail → quality option → intermediate page → back', async ({ page }) => {
+const pathFor = (link: (typeof PUBLIC_LINKS)[number]) =>
+  intermediatePath(link.movieSlug, link.optionSlug);
+const continueFor = (link: (typeof PUBLIC_LINKS)[number]) =>
+  continuePath(link.movieSlug, link.optionSlug);
+
+test('homepage → movie details → selected quality → Page 3 → explicit and browser Back', async ({
+  page,
+}) => {
   await page.goto('/');
   await page.locator('article h3 a').first().click();
-  await expect(page).toHaveURL(/\/movies\/[^/]+\/?$/);
+  await expect(page).toHaveURL(new RegExp(`/movies/${firstMovie.slug}/?$`));
   const detailUrl = page.url();
-
   await page.locator('ul[aria-label="Quality option placeholders"] a').first().click();
-  await expect(page).toHaveURL(/\/go\/lnk-\d{4}\/?$/);
+  await expect(page).toHaveURL(new RegExp(`${pathFor(firstLink)}$`));
   await expect(page.getByRole('heading', { level: 1 })).toHaveText(
     'Continue to your selected link',
   );
-
   const details = page.getByRole('region', { name: 'Selected link details' });
   await expect(details).toContainText(firstLink.movieTitle);
   await expect(details).toContainText(firstLink.quality);
   await expect(details).toContainText(firstLink.providerName);
-  await expect(page.getByTestId('stored-destination')).toHaveText(firstLink.targetUrl);
-
-  const continueButton = page.getByRole('button', { name: /continue/i });
-  await expect(continueButton).toBeVisible();
-  await expect(continueButton).toHaveAttribute('aria-disabled', 'true');
-  // The control is aria-disabled for assistive tech but still answers a real click with
-  // an explanation instead of navigating. Playwright treats aria-disabled as disabled,
-  // so force the pointer action the way a real user's click would land.
-  await continueButton.click({ force: true });
-  await expect(page.getByRole('status')).toContainText('Owner approval is required');
-  await expect(page).toHaveURL(/\/go\/lnk-\d{4}\/?$/);
-  expect(await page.locator('a[href^="http"]').count()).toBe(0);
-
+  await expect(page.getByRole('button', { name: /^continue/i })).toBeDisabled();
+  await expect(
+    page.getByText(/external destinations are disabled in this prototype/i),
+  ).toBeVisible();
   await page.getByRole('link', { name: /back to movie details/i }).click();
+  await expect(page).toHaveURL(detailUrl);
+  await page.goBack();
+  await expect(page).toHaveURL(new RegExp(`${pathFor(firstLink)}$`));
+  await page.goBack();
   await expect(page).toHaveURL(detailUrl);
 });
 
-test('each quality/provider link maps to its own unique destination', async ({ page }) => {
-  await page.goto(`/go/${firstLink.id}/`);
-  await expect(page.getByTestId('stored-destination')).toHaveText(firstLink.targetUrl);
-  const details = page.getByRole('region', { name: 'Selected link details' });
-  await expect(details).toContainText(firstLink.providerName);
-
-  await page.goto(`/go/${betaLink.id}/`);
-  await expect(page.getByTestId('stored-destination')).toHaveText(betaLink.targetUrl);
-  await expect(page.getByRole('region', { name: 'Selected link details' })).toContainText(
-    betaLink.providerName,
-  );
-  expect(betaLink.targetUrl).not.toBe(firstLink.targetUrl);
-
-  await page.goto(`/go/${otherMovieLink.id}/`);
-  await expect(page.getByTestId('stored-destination')).toHaveText(otherMovieLink.targetUrl);
-  await expect(page.getByRole('region', { name: 'Selected link details' })).toContainText(
-    otherMovieLink.movieTitle,
-  );
+test('every quality option opens the matching safe server-backed selection', async ({
+  page,
+  request,
+}) => {
+  const choices = movieLinks.filter((link) => link.kind === 'quality');
+  expect(choices).toHaveLength(6);
+  for (const link of choices) {
+    const response = await page.goto(pathFor(link));
+    expect(response?.status(), pathFor(link)).toBe(200);
+    const details = page.getByRole('region', { name: 'Selected link details' });
+    await expect(details).toContainText(link.movieTitle);
+    await expect(details).toContainText(link.quality);
+    await expect(details).toContainText(link.providerName);
+    await expect(page.getByRole('button', { name: /^continue/i })).toBeDisabled();
+    expect(page.url()).not.toMatch(/lnk-\d{4}/);
+    const denied = await request.get(continueFor(link), { maxRedirects: 0 });
+    expect(denied.status()).toBe(link.status === 'disabled' ? 410 : 403);
+    expect(denied.headers()['location']).toBeUndefined();
+  }
 });
 
-test('query parameters cannot change the stored destination', async ({ page }) => {
-  await page.goto(`/go/${firstLink.id}/?url=https://evil.example.com/&target=https://evil.com`);
-  await expect(page.getByTestId('stored-destination')).toHaveText(firstLink.targetUrl);
-  await expect(page.getByRole('button', { name: /continue/i })).toHaveAttribute(
-    'aria-disabled',
-    'true',
-  );
-  expect(await page.locator('a[href^="http"]').count()).toBe(0);
-});
+test('invalid, disabled and legacy internal-ID links fail safely', async ({ page, request }) => {
+  await page.goto(`/movies/${firstMovie.slug}/`);
+  const disabledOption = page
+    .locator('ul[aria-label="Quality option placeholders"] button')
+    .filter({ hasText: disabledLink.label });
+  await expect(disabledOption).toBeDisabled();
 
-test('disabled and unknown links show a safe state', async ({ page }) => {
-  await page.goto(`/go/${disabledLink.id}/`);
-  await expect(page.getByText('Disabled by administrator')).toBeVisible();
-  await expect(page.getByRole('button', { name: /continue/i })).toHaveAttribute(
-    'aria-disabled',
-    'true',
-  );
+  await page.goto(pathFor(disabledLink));
+  await expect(page.getByText('This option is currently unavailable.')).toBeVisible();
+  await expect(page.getByRole('button', { name: /^continue/i })).toBeDisabled();
 
-  await page.goto('/go/lnk-9999/');
-  await expect(page.getByRole('heading', { name: 'Link not available' })).toBeVisible();
-  expect(await page.getByTestId('stored-destination').count()).toBe(0);
-});
-
-test('continue endpoint denies safely and is not an open redirect', async ({ request }) => {
-  const enabled = await request.get(`/r/${firstLink.id}/`, { maxRedirects: 0 });
-  expect(enabled.status()).toBe(403);
-  expect(enabled.headers()['location']).toBeUndefined();
-  expect(enabled.headers()['cache-control']).toContain('no-store');
-  expect(await enabled.text()).toContain('not activated in this prototype');
-
-  const injected = await request.get(`/r/${firstLink.id}/?url=https%3A%2F%2Fevil.example.com%2F`, {
+  const invalid = await page.goto(`/go/${firstMovie.slug}/not-a-choice/`);
+  expect(invalid?.status()).toBe(404);
+  await expect(page.getByRole('heading', { name: /fixture not found/i })).toBeVisible();
+  const invalidContinue = await request.get(`/r/${firstMovie.slug}/not-a-choice/`, {
     maxRedirects: 0,
   });
-  expect(injected.status()).toBe(403);
-  expect(injected.headers()['location']).toBeUndefined();
-
-  const disabled = await request.get(`/r/${disabledLink.id}/`, { maxRedirects: 0 });
-  expect(disabled.status()).toBe(410);
-  expect(disabled.headers()['location']).toBeUndefined();
-
-  const unknown = await request.get('/r/lnk-9999/', { maxRedirects: 0 });
-  expect(unknown.status()).toBe(404);
-  expect(unknown.headers()['location']).toBeUndefined();
+  expect(invalidContinue.status()).toBe(404);
+  expect(invalidContinue.headers()['location']).toBeUndefined();
+  expect((await request.get('/go/lnk-0001/', { maxRedirects: 0 })).status()).toBe(404);
+  expect((await request.get('/r/lnk-0001/', { maxRedirects: 0 })).status()).toBe(404);
 });
 
-test('prototype admin configures a link independently and the public page follows', async ({
+test('query parameters cannot change the server mapping or trigger a redirect', async ({
+  page,
+  request,
+}) => {
+  await page.goto(`${pathFor(firstLink)}?url=https://evil.example.com/&target=https://evil.com`);
+  await expect(page.getByRole('region', { name: 'Selected link details' })).toContainText(
+    firstLink.quality,
+  );
+  await expect(page.getByRole('button', { name: /^continue/i })).toBeDisabled();
+  expect(await page.locator('a[href^="http"]').count()).toBe(0);
+  const injected = await request.get(
+    `${continueFor(firstLink)}?url=https%3A%2F%2Fevil.example.com%2F`,
+    { maxRedirects: 0 },
+  );
+  expect(injected.status()).toBe(403);
+  expect(injected.headers()['location']).toBeUndefined();
+  expect(injected.headers()['cache-control']).toContain('no-store');
+});
+
+test('public HTML and served JavaScript do not expose server fixture targets or internal IDs', async ({
+  request,
+}) => {
+  const paths = ['/', `/movies/${firstMovie.slug}/`, pathFor(firstLink), '/admin/links/'];
+  const scripts = new Set<string>();
+  for (const path of paths) {
+    const response = await request.get(path);
+    expect(response.status(), path).toBe(200);
+    const html = await response.text();
+    expect(html, path).not.toMatch(/lnk-\d{4}|https?:\/\/(?:alpha|beta)\.example\.com\//i);
+    expect(html, path).not.toContain('Stored destination');
+    expect(html, path).not.toContain('Link reference');
+    for (const match of html.matchAll(/<script[^>]+src="([^"]+\.js(?:\?[^"]*)?)"/g)) {
+      if (match[1]?.startsWith('/_next/static/')) scripts.add(match[1]);
+    }
+  }
+  expect(scripts.size).toBeGreaterThan(0);
+  for (const src of scripts) {
+    const response = await request.get(src);
+    expect(response.status(), src).toBe(200);
+    const body = await response.text();
+    expect(body, src).not.toContain('lnk-');
+    expect(body, src).not.toMatch(/https?:\/\/(?:alpha|beta)\.example\.com\//i);
+    expect(body, src).not.toContain('q-720-hevc');
+  }
+});
+
+test('client navigation RSC payloads do not expose server records or destinations', async ({
+  page,
+}) => {
+  const payloads: Array<Promise<string>> = [];
+  const observedPaths = new Set<string>();
+  page.on('response', (response) => {
+    const path = new URL(response.url()).pathname;
+    const isTarget = path === `/movies/${firstMovie.slug}/` || path === pathFor(firstLink);
+    if (isTarget && response.headers()['content-type']?.includes('text/x-component')) {
+      observedPaths.add(path);
+      payloads.push(response.text());
+    }
+  });
+
+  await page.goto('/');
+  await page.locator('article h3 a').first().click();
+  await page.locator('ul[aria-label="Quality option placeholders"] a').first().click();
+  await expect(page).toHaveURL(new RegExp(`${pathFor(firstLink)}$`));
+  await expect.poll(() => observedPaths.size).toBe(2);
+  for (const payload of await Promise.all(payloads)) {
+    expect(payload).not.toMatch(
+      /lnk-|fixture-\d{3}|https?:\/\/(?:alpha|beta)\.example\.com\/|q-(?:480|720-hevc|720-x264|1080-hevc|1080-x264|hq-1080)/i,
+    );
+  }
+});
+
+test('isolated manager drafts do not expose a stored URL or change public pages', async ({
   page,
 }) => {
   await page.goto('/admin/links/');
-  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Provider link configuration');
-  await expect(page.getByText(/no authentication, no server write and no database/i)).toBeVisible();
+  await expect(page.getByText(/do not change the public pages or server mappings/i)).toBeVisible();
+  const firstRow = page
+    .getByRole('region', { name: 'Provider links' })
+    .getByRole('listitem')
+    .first();
+  await firstRow.getByRole('button', { name: 'Disable' }).click();
+  await expect(firstRow).toContainText('Disabled');
 
-  await page.getByLabel('Link label').fill('Owner approved extra page');
+  const testUrl = 'https://beta.example.com/watch/demo/2160p';
+  await page.getByLabel('Link label').fill('Extra demo page');
   await page.getByLabel('Quality / option').fill('2160p');
-  await page.getByLabel(/Destination URL/i).fill('https://beta.example.com/watch/extra/2160p');
+  await page.getByLabel(/Test destination URL/i).fill(testUrl);
   await page.getByRole('button', { name: 'Add link' }).click();
-  await expect(page.getByRole('status')).toContainText('Added link lnk-c');
+  const row = page.getByRole('listitem').filter({ hasText: 'Extra demo page' });
+  await expect(row).toContainText('Draft only; no public page');
+  await expect(row).not.toContainText(testUrl);
+  expect(
+    await page.evaluate(() => window.sessionStorage.getItem('azmovies.prototype.link-demo.v2')),
+  ).not.toContain(testUrl);
 
-  const row = page.getByRole('listitem').filter({ hasText: 'Owner approved extra page' });
-  const href = await row.getByRole('link', { name: 'Open intermediate page' }).getAttribute('href');
-  expect(href).toMatch(/^\/go\/lnk-c\d{4}\/?$/);
-
-  await page.goto(href!);
-  await expect(page.getByTestId('stored-destination')).toHaveText(
-    'https://beta.example.com/watch/extra/2160p',
+  await page.goto(pathFor(firstLink));
+  await expect(
+    page.getByText('External destinations are disabled in this prototype.'),
+  ).toBeVisible();
+  await expect(page.getByText('This option is currently unavailable.')).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Selected link details' })).toContainText(
+    firstLink.quality,
   );
-  await expect(page.getByRole('region', { name: 'Selected link details' })).toContainText('2160p');
-
-  await page.goto('/admin/links/');
-  await page
-    .getByRole('listitem')
-    .filter({ hasText: 'Owner approved extra page' })
-    .getByRole('button', { name: 'Disable' })
-    .click();
-  await page.goto(href!);
-  await expect(page.getByText('Disabled by administrator')).toBeVisible();
-
-  await page.goto('/admin/links/');
-  await page
-    .getByRole('listitem')
-    .filter({ hasText: 'Owner approved extra page' })
-    .getByRole('button', { name: 'Delete' })
-    .click();
-  await page.goto(href!);
-  await expect(page.getByRole('heading', { name: 'Link not available' })).toBeVisible();
 });
 
-test('admin rejects a non-approved destination', async ({ page }) => {
+test('manager rejects a non-approved test URL', async ({ page }) => {
   await page.goto('/admin/links/');
   await page.getByLabel('Link label').fill('Unsafe link');
   await page.getByLabel('Quality / option').fill('720p');
-  await page.getByLabel(/Destination URL/i).fill('https://evil.example.com/watch/a');
+  await page.getByLabel(/Test destination URL/i).fill('https://evil.example.com/watch/a');
   await page.getByRole('button', { name: 'Add link' }).click();
-  // Scope to the form: the Next.js route announcer is also an alert role.
   await expect(
     page.getByRole('form', { name: 'Add a provider link' }).getByRole('alert'),
   ).toContainText('not on the approved destination allowlist');
 });
 
-test('@a11y intermediate page and link manager have no serious or critical axe violations', async ({
+test('@a11y intermediate and isolated manager have no serious or critical axe violations', async ({
   page,
 }) => {
-  for (const path of [`/go/${firstLink.id}/`, `/go/${disabledLink.id}/`, '/admin/links/']) {
+  for (const path of [pathFor(firstLink), pathFor(disabledLink), '/admin/links/']) {
     await page.goto(path);
     const results = await new AxeBuilder({ page }).analyze();
     expect(
-      results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical'),
+      results.violations.filter(
+        (violation) => violation.impact === 'serious' || violation.impact === 'critical',
+      ),
       path,
     ).toEqual([]);
   }
 });
 
-for (const width of [320, 768, 1440]) {
-  test(`@responsive intermediate page ${width}px has no overflow and keeps Continue reachable`, async ({
+for (const width of [320, 360, 390, 768, 1440]) {
+  test(`@responsive Page 3 at ${width}px has no overflow and keeps actions reachable`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto(`/go/${firstLink.id}/`);
-    const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
-    expect(scrollWidth).toBeLessThanOrEqual(width);
-    await expect(page.getByRole('button', { name: /continue/i })).toBeVisible();
+    await page.goto(pathFor(firstLink));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
+      width,
+    );
+    await expect(page.getByRole('button', { name: /^continue/i })).toBeVisible();
     await expect(page.getByRole('link', { name: /back to movie details/i })).toBeVisible();
   });
 }

@@ -17,6 +17,18 @@ describe('static fixture catalog', () => {
     expect(filterMovies('', 'ANIME')).toEqual([]);
   });
 
+  it('uses descriptive slugs instead of synthetic record IDs and labels audio consistently', () => {
+    expect(MOVIES.every((movie) => !('id' in movie))).toBe(true);
+    expect(MOVIES.every((movie) => !movie.languages.includes('Multi Audio'))).toBe(true);
+    const singleLanguage = MOVIES.find((movie) => movie.languages.length === 1)!;
+    expect(singleLanguage.displayTitle).toContain(`${singleLanguage.languages[0]} Audio`);
+    expect(singleLanguage.displayTitle).not.toMatch(/dual audio|multi audio/i);
+    const twoLanguages = MOVIES.find((movie) => movie.languages.length === 2)!;
+    expect(twoLanguages.displayTitle).toContain('Dual Audio');
+    const threeLanguages = MOVIES.find((movie) => movie.languages.length > 2)!;
+    expect(threeLanguages.displayTitle).toContain('Multi Audio');
+  });
+
   it('resolves detail slugs and local poster paths only', () => {
     const movie = MOVIES[0]!;
     expect(getMovie(movie.slug)).toEqual(movie);

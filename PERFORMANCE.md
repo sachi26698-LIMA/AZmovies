@@ -1,6 +1,6 @@
 # AZmovies — Performance Plan and Budgets
 
-**Status:** targets and procedures only. No Lighthouse, browser, load, image or database performance measurement has run. Do not quote these numbers as achieved results.
+**Status:** performance targets and procedures only. Chromium functional, layout and image-rendering checks ran, but no Lighthouse, browser timing, load, transfer-byte or database performance benchmark ran. Do not quote the budgets as achieved results.
 
 ## 1. Workload assumptions
 
@@ -66,7 +66,7 @@ Budgets are provisional until the first actual build/reference measurement. Any 
 ## 6. Current evidence and blockers
 
 - Phase 2 posters are original synthetic JPEGs optimized to 480×720, quality 82/mozjpeg, approximately 46–97 KB each; poster geometry is reserved with `aspect-ratio` and the first row uses priority loading.
-- Static production build passed with 51 prerendered pages; no database or live provider is involved.
+- Final static production build passed with 532 prerendered pages; no database or live provider is involved. The screenshot script temporarily forces lazy images to load for complete captures; application lazy-loading behavior is not changed.
 - PERF-03 is **Partial**: local asset optimization and reserved geometry are implemented; cold/warm cache and invalidation measurements are not run.
 - PERF-01, PERF-02, PERF-04 and PERF-05: **Not run**. No Lighthouse/Core Web Vitals score, 10k-catalog benchmark, staging load result or production capacity is claimed.
 - Chromium execution is available through `@sparticuz/chromium`; Firefox/WebKit and real-device lab runs remain blocked/not provisioned.

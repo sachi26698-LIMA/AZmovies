@@ -7,18 +7,14 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { SideDrawer } from '@/components/layout/SideDrawer';
 import { MOVIES } from '@/lib/fixtures';
-import {
-  PROVIDERS,
-  getLinksForMovie,
-  intermediatePath,
-  type ProviderLinkFixture,
-} from '@/lib/link-fixtures';
+import { PROVIDERS, getPublicLinksForMovie, intermediatePath } from '@/lib/link-catalog';
 import {
   EMPTY_LINK_STATE,
   applyLinkOverrides,
   createCustomLink,
   useLinkState,
   writeLinkState,
+  type DemoLink,
   type LinkOverride,
   type LinkOverrideState,
 } from '@/lib/link-store';
@@ -40,9 +36,18 @@ interface LinkFormProps {
   submitLabel: string;
   onSubmit: (values: LinkFormValues) => void;
   onCancel?: () => void;
+  requireDestination?: boolean;
 }
 
-function LinkForm({ idPrefix, heading, initial, submitLabel, onSubmit, onCancel }: LinkFormProps) {
+function LinkForm({
+  idPrefix,
+  heading,
+  initial,
+  submitLabel,
+  onSubmit,
+  onCancel,
+  requireDestination = false,
+}: LinkFormProps) {
   const [values, setValues] = useState<LinkFormValues>(initial);
   const [errors, setErrors] = useState<Partial<Record<keyof LinkFormValues, string>>>({});
 
@@ -51,16 +56,21 @@ function LinkForm({ idPrefix, heading, initial, submitLabel, onSubmit, onCancel 
     const nextErrors: Partial<Record<keyof LinkFormValues, string>> = {};
     if (!values.label.trim()) nextErrors.label = 'Enter a truthful link label.';
     if (!values.quality.trim()) nextErrors.quality = 'Enter the quality or option name.';
-    const validation = validateDestinationUrl(values.targetUrl);
-    if (!validation.ok) nextErrors.targetUrl = validation.message;
+    const hasDestination = values.targetUrl.trim().length > 0;
+    const validation = hasDestination ? validateDestinationUrl(values.targetUrl) : null;
+    if (requireDestination && !hasDestination)
+      nextErrors.targetUrl = 'Enter a test destination URL.';
+    if (validation && !validation.ok) nextErrors.targetUrl = validation.message;
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
     onSubmit({
       ...values,
       label: values.label.trim(),
       quality: values.quality.trim(),
-      targetUrl: validation.ok ? validation.url : values.targetUrl,
+      targetUrl: validation?.ok ? validation.url : '',
     });
+    // The URL is only a form-validation example, never a stored destination.
+    setValues({ ...initial, targetUrl: '' });
   }
 
   return (
@@ -107,7 +117,7 @@ function LinkForm({ idPrefix, heading, initial, submitLabel, onSubmit, onCancel 
         </div>
         <div className={styles.field}>
           <label className={styles.fieldLabel} htmlFor={`${idPrefix}-provider`}>
-            Authorized provider
+            Fixture provider
           </label>
           <select
             id={`${idPrefix}-provider`}
@@ -141,7 +151,7 @@ function LinkForm({ idPrefix, heading, initial, submitLabel, onSubmit, onCancel 
       </div>
       <div className={styles.field}>
         <label className={styles.fieldLabel} htmlFor={`${idPrefix}-url`}>
-          Destination URL (approved HTTPS hosts only)
+          Test destination URL (approved HTTPS hosts only)
         </label>
         <input
           id={`${idPrefix}-url`}
@@ -150,9 +160,12 @@ function LinkForm({ idPrefix, heading, initial, submitLabel, onSubmit, onCancel 
           inputMode="url"
           maxLength={2048}
           aria-invalid={errors.targetUrl ? 'true' : undefined}
-          aria-describedby={errors.targetUrl ? `${idPrefix}-url-error` : undefined}
+          aria-describedby={errors.targetUrl ? `${idPrefix}-url-error` : `${idPrefix}-url-note`}
           onChange={(event) => setValues({ ...values, targetUrl: event.target.value })}
         />
+        <p className={styles.linkMeta} id={`${idPrefix}-url-note`}>
+          Validated for this demo, then discarded. It never changes a server destination.
+        </p>
         {errors.targetUrl ? (
           <p className={styles.error} id={`${idPrefix}-url-error`} role="alert">
             {errors.targetUrl}
@@ -175,12 +188,12 @@ function LinkForm({ idPrefix, heading, initial, submitLabel, onSubmit, onCancel 
 
 function withOverride(
   state: LinkOverrideState,
-  linkId: string,
+  demoKey: string,
   patch: LinkOverride,
 ): LinkOverrideState {
   return {
     ...state,
-    overrides: { ...state.overrides, [linkId]: { ...state.overrides[linkId], ...patch } },
+    overrides: { ...state.overrides, [demoKey]: { ...state.overrides[demoKey], ...patch } },
   };
 }
 
@@ -189,13 +202,13 @@ export function LinkManagerPrototype() {
   const state = useLinkState();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [movieSlug, setMovieSlug] = useState(MOVIES[0]?.slug ?? '');
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [message, setMessage] = useState('');
 
   const allLinks = applyLinkOverrides(state);
   const movie = MOVIES.find((item) => item.slug === movieSlug);
   const links = allLinks.filter((link) => link.movieSlug === movieSlug);
-  const fixtureCount = getLinksForMovie(movieSlug).length;
+  const fixtureCount = getPublicLinksForMovie(movieSlug).length;
 
   function providerName(id: string): string {
     return PROVIDERS.find((provider) => provider.id === id)?.name ?? id;
@@ -212,40 +225,40 @@ export function LinkManagerPrototype() {
         quality: values.quality,
         providerId: values.providerId,
         providerName: providerName(values.providerId),
-        targetUrl: values.targetUrl,
         status: values.status,
+        hasValidatedDraft: true,
       },
-      allLinks.map((item) => item.id),
+      allLinks.map((item) => item.demoKey),
     );
     writeLinkState({ ...state, added: [...state.added, link] });
-    setMessage(`Added link ${link.id} for ${movie.title}.`);
+    setMessage(`Added a demo option for ${movie.title}.`);
   }
 
-  function handleEdit(linkId: string, values: LinkFormValues) {
+  function handleEdit(demoKey: string, values: LinkFormValues) {
     writeLinkState(
-      withOverride(state, linkId, {
+      withOverride(state, demoKey, {
         label: values.label,
         quality: values.quality,
         providerId: values.providerId,
         providerName: providerName(values.providerId),
-        targetUrl: values.targetUrl,
         status: values.status,
+        ...(values.targetUrl ? { hasValidatedDraft: true } : {}),
       }),
     );
-    setEditingId(null);
-    setMessage(`Updated link ${linkId}.`);
+    setEditingKey(null);
+    setMessage('Updated the demo option.');
   }
 
-  function handleToggle(link: ProviderLinkFixture) {
+  function handleToggle(link: DemoLink) {
     const status = link.status === 'enabled' ? 'disabled' : 'enabled';
-    writeLinkState(withOverride(state, link.id, { status }));
-    setMessage(`Link ${link.id} is now ${status}.`);
+    writeLinkState(withOverride(state, link.demoKey, { status }));
+    setMessage(`Demo option is now ${status}.`);
   }
 
-  function handleDelete(link: ProviderLinkFixture) {
-    writeLinkState(withOverride(state, link.id, { deleted: true }));
-    setEditingId(null);
-    setMessage(`Deleted link ${link.id} from this prototype session.`);
+  function handleDelete(link: DemoLink) {
+    writeLinkState(withOverride(state, link.demoKey, { deleted: true }));
+    setEditingKey(null);
+    setMessage('Deleted the option from this demo session.');
   }
 
   return (
@@ -259,11 +272,10 @@ export function LinkManagerPrototype() {
         <p className={styles.eyebrow}>AZmovies · Prototype link manager</p>
         <h1 className={styles.title}>Provider link configuration</h1>
         <p className={styles.adminBanner}>
-          <strong>Prototype only.</strong> This screen edits fixture data in your browser tab
-          session. There is no authentication, no server write and no database, and it cannot
-          activate a real external destination. The authenticated, persisted admin with per-link
-          authorization evidence is a later phase. Reload-safe persistence and audit history are not
-          provided here.
+          <strong>Isolated demo only.</strong> Changes stay in this browser tab and do not change
+          the public pages or server mappings. There is no authentication, no server write and no
+          database. Test URLs are validated and discarded, and no real destination can be activated.
+          Authenticated, persisted link management is a later phase.
         </p>
 
         <div className={styles.toolbarRow}>
@@ -277,7 +289,7 @@ export function LinkManagerPrototype() {
               value={movieSlug}
               onChange={(event) => {
                 setMovieSlug(event.target.value);
-                setEditingId(null);
+                setEditingKey(null);
               }}
             >
               {MOVIES.map((item) => (
@@ -292,8 +304,8 @@ export function LinkManagerPrototype() {
             className={styles.smallButton}
             onClick={() => {
               writeLinkState(EMPTY_LINK_STATE);
-              setEditingId(null);
-              setMessage('All prototype overrides cleared. Fixture links restored.');
+              setEditingKey(null);
+              setMessage('All demo overrides cleared. Fixture options restored.');
             }}
           >
             Reset to fixtures
@@ -304,9 +316,9 @@ export function LinkManagerPrototype() {
         </div>
 
         <p className={styles.linkMeta}>
-          {links.length} configurable links for this movie ({fixtureCount} fixtures +{' '}
-          {links.length - fixtureCount} added in this session). Each link has its own id, provider,
-          destination and status.
+          {links.length} demo options for this movie ({fixtureCount} original fixtures;{' '}
+          {links.filter((link) => link.draftOnly).length} session drafts). Changes are isolated from
+          the public catalog.
         </p>
         <p className={styles.statusMessage} role="status" aria-live="polite">
           {message}
@@ -316,7 +328,7 @@ export function LinkManagerPrototype() {
           <h2 className={styles.panelTitle}>Individual links</h2>
           <ul className={styles.linkList}>
             {links.map((link) => (
-              <li key={link.id} className={styles.linkRow}>
+              <li key={link.demoKey} className={styles.linkRow}>
                 <div className={styles.linkRowHead}>
                   <h3 className={styles.linkRowTitle}>{link.label}</h3>
                   <span
@@ -330,19 +342,25 @@ export function LinkManagerPrototype() {
                   </span>
                 </div>
                 <p className={styles.linkMeta}>
-                  {link.quality} · {link.providerName} ·{' '}
-                  <code className={styles.code}>{link.id}</code>
+                  {link.quality} · {link.providerName}
                   <br />
-                  {link.targetUrl}
+                  {link.draftOnly ? 'Session draft only' : 'Fixture demo; server mapping unchanged'}
                 </p>
                 <div className={styles.rowActions}>
-                  <Link className={styles.smallButton} href={intermediatePath(link.id)}>
-                    Open intermediate page
-                  </Link>
+                  {link.draftOnly ? (
+                    <span className={styles.linkMeta}>Draft only; no public page</span>
+                  ) : (
+                    <Link
+                      className={styles.smallButton}
+                      href={intermediatePath(link.movieSlug, link.optionSlug)}
+                    >
+                      Open intermediate page
+                    </Link>
+                  )}
                   <button
                     type="button"
                     className={styles.smallButton}
-                    onClick={() => setEditingId(editingId === link.id ? null : link.id)}
+                    onClick={() => setEditingKey(editingKey === link.demoKey ? null : link.demoKey)}
                   >
                     Edit
                   </button>
@@ -361,21 +379,21 @@ export function LinkManagerPrototype() {
                     Delete
                   </button>
                 </div>
-                {editingId === link.id ? (
+                {editingKey === link.demoKey ? (
                   <LinkForm
-                    key={link.id}
-                    idPrefix={`edit-${link.id}`}
-                    heading={`Edit ${link.id}`}
+                    key={link.demoKey}
+                    idPrefix="edit-link"
+                    heading="Edit demo option"
                     submitLabel="Save link"
                     initial={{
                       label: link.label,
                       quality: link.quality,
                       providerId: link.providerId,
-                      targetUrl: link.targetUrl,
+                      targetUrl: '',
                       status: link.status,
                     }}
-                    onSubmit={(values) => handleEdit(link.id, values)}
-                    onCancel={() => setEditingId(null)}
+                    onSubmit={(values) => handleEdit(link.demoKey, values)}
+                    onCancel={() => setEditingKey(null)}
                   />
                 ) : null}
               </li>
@@ -388,6 +406,7 @@ export function LinkManagerPrototype() {
           idPrefix="add"
           heading="Add a provider link"
           submitLabel="Add link"
+          requireDestination
           initial={{
             label: '',
             quality: '',

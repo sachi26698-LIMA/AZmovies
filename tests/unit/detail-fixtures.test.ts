@@ -16,16 +16,20 @@ describe('static detail fixtures', () => {
     }
   });
 
-  it('keeps provider/watch/trailer links as unconfigured placeholders', () => {
+  it('uses only local descriptive paths and keeps the trailer unconfigured', () => {
     const detail = getMovieDetail('the-odyssey-protocol-2')!;
-    const links = [
-      ...detail.qualityOptions,
-      ...detail.watchOptions,
-      ...detail.providerLinks,
-      detail.trailer,
-    ];
-    expect(links.every((link) => link.href === null)).toBe(true);
+    const options = [...detail.qualityOptions, ...detail.watchOptions, ...detail.providerLinks];
+    expect(options.every((link) => link.href?.startsWith('/go/'))).toBe(true);
+    expect(detail.trailer.href).toBeNull();
+    expect(JSON.stringify(options)).not.toMatch(/lnk-\d{4}|https?:\/\//i);
     expect(detail.screenshots.every((shot) => shot.src.startsWith('/stills/'))).toBe(true);
+  });
+
+  it('does not call a single-language fixture multi-audio', () => {
+    const movie = MOVIES.find((item) => item.languages.length === 1)!;
+    const detail = getMovieDetail(movie.slug)!;
+    expect(detail.languageLabel).toBe(`${movie.languages[0]} / ESubs`);
+    expect(detail.languageLabel).not.toContain('Multi Audio');
   });
 
   it('returns undefined for unknown slugs', () => {

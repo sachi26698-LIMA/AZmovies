@@ -1,6 +1,6 @@
 # AZmovies — AI Context
 
-**Checkpoint:** 2026-11-08 · Phase 2 homepage + movie detail + Page 3 intermediate link page delivered locally · **Awaiting owner approval before the persistence/admin phase**
+**Checkpoint:** final Phase 2 refinement tested locally · **Awaiting explicit owner approval before persistence/authentication or live redirects.** No push.
 
 This is the concise project memory. Read `AGENTS.md` before acting. Plans below are not claims of implemented functionality.
 
@@ -12,25 +12,25 @@ The owner has explicitly prohibited unnecessary redesign and premature implement
 
 ## 2. Verified repository and tooling snapshot
 
-| Item                     | Actual observation on 2026-11-07                                                                                                                                                                                                   |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Checkout                 | `/home/user/AZmovies`                                                                                                                                                                                                              |
-| Session branch           | `arena/9177d6f3-azmovies`                                                                                                                                                                                                          |
-| Starting commit          | `662694163ddf11337fa5a7cceea83bacdd4472d8` (`Initial commit`)                                                                                                                                                                      |
-| Foundation commit        | `13ad936a25e236985068fa5d422f64aafdb04afa` — local only; a follow-up checkpoint records validation evidence                                                                                                                        |
-| Starting tracked content | `README.md` only, containing `# AZmovies`; inspected before expansion                                                                                                                                                              |
-| Starting worktree        | Clean                                                                                                                                                                                                                              |
-| Remote                   | `https://github.com/sachi26698-LIMA/AZmovies.git`                                                                                                                                                                                  |
-| GitHub CLI               | 2.23.0; authenticated as `sachi26698-LIMA` through an existing environment token, never printed                                                                                                                                    |
-| GitHub API               | Read-only repository request succeeded; public, unarchived, default branch `main`; API reported push/admin permissions                                                                                                             |
-| GitHub writes            | No push, PR, merge or remote configuration change performed                                                                                                                                                                        |
-| Git                      | 2.39.5; local commit identity configured                                                                                                                                                                                           |
-| OS/resources             | Linux x86_64; 2 CPUs; approximately 3.8 GiB RAM; approximately 20 GiB free disk at inspection                                                                                                                                      |
-| Node/npm                 | Node 22.22.3 / npm 10.9.8; npm registry metadata reads succeeded                                                                                                                                                                   |
-| Other runtimes           | Python 3.11.2; Yarn 1.22.22; pnpm/Bun absent                                                                                                                                                                                       |
-| Database/browser tools   | No `psql`, `sqlite3`, Docker, Chromium, Chrome or Firefox executable found                                                                                                                                                         |
-| Visual references        | Fifteen owner-supplied JPEGs inspected and mapped: six homepage files (two primary MOVIES4U, four HDHub4u) and nine detail files (eight crops + one full page); raw images ignored by Git                                          |
-| Application              | Fixture prototype implemented: homepage, movie detail, Page 3 `/go/{linkId}/`, locked Continue endpoint `/r/{linkId}/` and prototype link manager `/admin/links/`; no database/auth/real redirect; local checkpoints only, no push |
+| Item                     | Actual observation on 2026-11-07                                                                                                                                                                    |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Checkout                 | `/home/user/AZmovies`                                                                                                                                                                               |
+| Session branch           | `arena/9177d6f3-azmovies`                                                                                                                                                                           |
+| Starting commit          | `662694163ddf11337fa5a7cceea83bacdd4472d8` (`Initial commit`)                                                                                                                                       |
+| Foundation commit        | `13ad936a25e236985068fa5d422f64aafdb04afa` — local only; a follow-up checkpoint records validation evidence                                                                                         |
+| Starting tracked content | `README.md` only, containing `# AZmovies`; inspected before expansion                                                                                                                               |
+| Starting worktree        | Clean                                                                                                                                                                                               |
+| Remote                   | `https://github.com/sachi26698-LIMA/AZmovies.git`                                                                                                                                                   |
+| GitHub CLI               | 2.23.0; authenticated as `sachi26698-LIMA` through an existing environment token, never printed                                                                                                     |
+| GitHub API               | Read-only repository request succeeded; public, unarchived, default branch `main`; API reported push/admin permissions                                                                              |
+| GitHub writes            | No push, PR, merge or remote configuration change performed                                                                                                                                         |
+| Git                      | 2.39.5; local commit identity configured                                                                                                                                                            |
+| OS/resources             | Linux x86_64; 2 CPUs; approximately 3.8 GiB RAM; approximately 20 GiB free disk at inspection                                                                                                       |
+| Node/npm                 | Node 22.22.3 / npm 10.9.8; npm registry metadata reads succeeded                                                                                                                                    |
+| Other runtimes           | Python 3.11.2; Yarn 1.22.22; pnpm/Bun absent                                                                                                                                                        |
+| Database/browser tools   | No `psql`, `sqlite3`, Docker, Chromium, Chrome or Firefox executable found                                                                                                                          |
+| Visual references        | Fifteen owner-supplied JPEGs inspected and mapped: six homepage files (two primary MOVIES4U, four HDHub4u) and nine detail files (eight crops + one full page); raw images ignored by Git           |
+| Application              | Static homepage, detail, `/go/{movieSlug}/{optionSlug}/`, locked `/r/{movieSlug}/{optionSlug}/` and isolated `/admin/links/` demo; no database, authentication or active external redirect; no push |
 
 The GitHub CLI rejected the newer `--active` flag; plain `gh auth status` succeeded. This is a CLI-version limitation, not an authentication failure.
 
@@ -38,7 +38,7 @@ The GitHub CLI rejected the newer `--active` flag; plain `gh auth status` succee
 
 - Terminal probes to `api.themoviedb.org` and `cdn.playwright.dev` failed during TLS connection (curl exit 35). No live metadata response or browser binary was obtained.
 - The environment permits terminal access to GitHub, npm and Python package hosts. Browser downloads and production database connectivity remain unverified.
-- The user reported a blank grey Arena preview frame. A direct external fetch of the public E2B URL, without a traffic-access header, returned 403 “Missing traffic access token”; this response came from the proxy before the app. The actual Arena iframe request headers and proxy logs were not accessible, so its exact failure is unconfirmed. The sandbox cannot reach the public URL directly (curl TLS exit 35). See BUG-014; owner-visible preview confirmation remains pending.
+- The user previously reported a blank grey frame and later confirmed the local preview is visible. A separate unauthenticated external fetch of the public E2B URL returned 403 “Missing traffic access token”; this came from the proxy, not the app. Actual Arena iframe request headers and proxy logs remain inaccessible, so the cause of the earlier frame and any authenticated gateway behavior are unconfirmed. See BUG-014.
 - IPv4 `0.0.0.0` and a temporary dual-stack `::` bind both served the app locally; there is no evidence that IPv6 binding caused the reported iframe failure. Do not weaken sandbox access restrictions or add tokens to source/URLs to work around the proxy.
 - Official TMDB/Better Auth documentation was retrieved through the separate web research tool. That does **not** prove future server-side TMDB connectivity.
 - npm metadata included Next 16.4.5, React 19.3.1, Better Auth 1.7.18 and Drizzle 0.45.4. Registry availability/engine metadata is not an installed compatibility test.
@@ -61,7 +61,7 @@ The GitHub CLI rejected the newer `--active` flag; plain `gh auth status` succee
 | D-03 | PostgreSQL + Drizzle migrations/query layer                                   | Relational catalog, transactions, constraints, full approval/audit history; same database engine in test/staging                  |
 | D-04 | Better Auth email/password, database sessions, closed registration, admin MFA | Maintained auth primitives instead of handwritten password/session crypto; production requires TOTP setup and recovery procedures |
 | D-05 | Provider-neutral metadata boundary; TMDB candidate only                       | Manual operation remains usable; live TMDB requires an appropriate permission/licence and working egress                          |
-| D-06 | Opaque-ID redirect route + exact destination policy + per-link approval       | No arbitrary `?url=` redirect; authorization is checked at click time                                                             |
+| D-06 | Descriptive public selection + server-only destination policy and approval    | No internal link/database IDs or raw stored targets in the public response; no arbitrary `?url=` redirect                         |
 | D-07 | Vitest/Testing Library, Playwright engines, axe, Lighthouse, CI               | Covers component/API/auth/functional/responsive/security/regression layers; actual runs still required                            |
 | D-08 | Two poster columns pending reference clarification                            | Preserves the explicit brief; desktop/mobile screenshot evidence must resolve any conflict before visual sign-off                 |
 
@@ -92,23 +92,10 @@ The FAQ separately describes free noncommercial use and attribution/branding req
 
 ## 7. Current evidence and next action
 
-Phase 2 application checks executed on 2026-11-07 after the movie-detail addition: `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run verify:static`, `npm run test` (21 Vitest tests passed), `npm run build` (51 static pages), `npm run test:e2e` (19 Chromium tests passed), `npm run analyze:references`, `npm run capture:prototype`, `npm run compare:visual`, and runtime `npm audit --omit=dev` (0 reported vulnerabilities). Artifacts are under `.artifacts/phase2/`, including `comparison-primary-top.png`, `comparison-detail-top.png`, `prototype-360-detail-top.png`, `prototype-360-detail-gallery.png`, `prototype-360-detail-options.png`, `prototype-metrics.json`, `playwright-results.json`, `static-boundary.json` and `reference-analysis.json`.
+Final sandbox run: `npm run test` **52/52** Vitest tests; `npm run build` **532 static pages**; `npx playwright test` **36/36** Chromium tests; the overlapping `npm run test:a11y` and `npm run test:responsive` subsets passed **3/3** and **19/19**. Format, lint, typecheck, static-boundary and public-boundary checks passed; `npm audit --omit=dev` reported **0** runtime vulnerabilities. The public-build check inspected **19 static assets and 2,660 generated HTML/RSC files** for current fixture signatures; an intentional client import of a `server-only` module was rejected by Next. Tests cover all 480 synthetic mappings and the visible journey. Captures, metrics, comparisons and logs are in `.artifacts/phase2/`; see `PHASE2_REPORT.md` and `PAGE3_REPORT.md`.
 
-Browser execution was resolved through `@sparticuz/chromium` with bundled AL2023 library extraction and omission of the unstable `--single-process` flag in this sandbox. Firefox/WebKit, real devices, screen-reader smoke, Lighthouse/Core Web Vitals, database/auth/API/live-metadata and production security checks remain **Not run**. Owner visual approval remains **pending**.
+Server fixture records and destination URLs remain behind the `server-only` boundary. The public page receives only a safe summary; Continue is natively disabled. The owner chose an isolated session demo: its add/edit/disable/delete operations never affect server mappings or public pages. The destination test field is validated then discarded. The old v1 session key is neither read, migrated nor deleted and may persist in older tabs until the session ends.
 
-### Page 3 increment (2026-11-08)
+Browser execution uses `@sparticuz/chromium` with bundled AL2023 library extraction and omission of the unstable `--single-process` flag. Firefox/WebKit, real devices, screen-reader smoke, Lighthouse/Core Web Vitals, database/auth/API/live metadata and production security checks remain **Not run**.
 
-Executed after adding the intermediate link page: `npm run format:check`, `npm run typecheck`,
-`npm run lint`, `npm run verify:static` (34 source files) passed; `npm run test` **52/52** Vitest;
-`npm run build` **532 static pages**; `npx playwright test` **30/30** Chromium; `npm run
-capture:prototype` executed; runtime `npm audit --omit=dev` **0**. Page 3 evidence lives in
-`.artifacts/phase2/prototype-360-link-*.png`, `prototype-360-admin-links*.png` and
-`prototype-metrics.json` (`link360`, `admin360`). Details: `PAGE3_REPORT.md`.
-
-Two independent locks keep external navigation off: `EXTERNAL_ACTIVATION_ENABLED = false` and
-per-link `authorization: 'fixture-placeholder'`. The link manager is a **sessionStorage prototype
-with no auth, no server write and no database**; it is not the real admin.
-
-Next action: wait for owner approval of Page 3 (and the still-pending homepage/detail approval).
-Do not start persistence/authenticated admin merely because the prototype builds. Do not activate
-real destinations until the owner supplies authorized URLs and per-link evidence.
+Two independent locks keep external navigation off: `EXTERNAL_ACTIVATION_ENABLED = false` and per-link `authorization: 'fixture-placeholder'`. Wait for the owner's explicit Phase 2 approval; do not start persistence/authenticated admin or activate real destinations without further approval, authorized URLs and per-link evidence.

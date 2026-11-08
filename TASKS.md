@@ -27,12 +27,12 @@
 - [x] Build fixture detail, not-found, loading, empty and error surfaces without live external movie actions.
 - [x] Generate original synthetic posters and optimize them to local 480×720 JPEG assets.
 - [x] Resolve Chromium execution through `@sparticuz/chromium`; record the sandbox library/flag workarounds.
-- [x] Execute Vitest unit/component tests: 21 passed after detail-page additions.
-- [x] Execute Playwright Chromium functional/accessibility/responsive tests: 19 passed after detail-page additions.
-- [x] Capture prototype screenshots at 360/390/768/1440 widths, drawer, detail top/gallery/options states.
+- [x] Execute final Vitest unit/component tests: 52/52 passed.
+- [x] Execute final Chromium functional/accessibility/responsive suite: 36/36 passed; overlapping axe and responsive subsets passed 3/3 and 19/19.
+- [x] Capture all three pages at 320/360/390/768/1440 widths, plus drawer and detail gallery/options states.
 - [x] Execute aligned primary-top and detail-top visual comparisons and record metrics/deviations; owner visual approval remains pending.
 - [x] Inspect all nine new movie-detail references and record the four-vs-nine count mismatch as BLK-012.
-- [x] Build the static movie detail page: trending carousel, title/info/chips, poster, scrollable screenshot gallery, separated quality/watch/provider placeholders, related movies and shared footer.
+- [x] Refine the static movie detail page: trending strip, title/info/chips, poster, continuous screenshot stack, local quality/watch/provider choices, related movies and shared footer.
 - [x] Generate and optimize three original synthetic 960×540 cinematic stills for the detail gallery.
 - [x] Test homepage→detail→back navigation, detail toolbar search, detail accessibility and detail responsive overflow.
 - [x] Update context/architecture/UI/tests/changelog/bug tracker and create local Phase 2 commits `3f0120d`, `f1edf53` and detail checkpoint `39f1262`; no push.
@@ -41,25 +41,23 @@
 ## Phase 2 increment — Page 3 intermediate external link page
 
 - [x] Review the existing Phase 2 homepage/detail work before changing anything.
-- [x] Give every quality/watch/provider option its own stored link record with a unique id and unique destination (480 records).
-- [x] Wire detail option rows to their own `/go/{linkId}/` intermediate page without redesigning the detail page.
-- [x] Build Page 3 showing movie title, selected quality, provider name, status, link reference and stored destination.
-- [x] Add a prominent, user-initiated Continue control and a Back to Movie Details option.
-- [x] Implement the exact-destination Continue endpoint `/r/{linkId}/` with default-deny status semantics.
-- [x] Implement shared destination validation: approved exact HTTPS hosts only, no userinfo/odd ports/unsafe paths.
-- [x] Prove open-redirect resistance: opaque id only; query/header/body targets ignored on `/go/` and `/r/`.
-- [x] Keep activation off with two independent locks (global constant + per-link fixture authorization).
-- [x] Build the prototype per-link manager with add/edit/disable/enable/delete and reset, each link independent.
-- [x] Execute 52 Vitest and 30 Chromium tests, including mapping, invalid URLs, disabled links and navigation.
-- [x] Capture Page 3, denial, disabled, link-manager and tablet/desktop screenshots.
-- [x] Update AI Brain, architecture, API, schema, security, UI, testing and task records; local commit `9ba92ac`, no push.
+- [x] Keep all 480 synthetic option records, internal IDs and destination URLs in a `server-only` inventory.
+- [x] Use descriptive `/go/{movieSlug}/{optionSlug}/` and `/r/{movieSlug}/{optionSlug}/` selectors, with a minimal safe Page 3 summary and no raw destination or internal ID in public payloads.
+- [x] Keep Continue natively disabled; offer explicit and browser Back navigation.
+- [x] Validate exact HTTPS hosts and reject unsafe paths; ignore query/header/body targets.
+- [x] Keep activation off with independent global and per-link fixture locks.
+- [x] Keep the owner's chosen isolated session-demo manager with add/edit/disable/enable/delete/reset; validate and discard test-destination input, with no public/server mapping changes.
+- [x] Test all 480 mappings in unit simulations and run the full browser, accessibility, responsive, HTML/RSC/JS and session-isolation checks.
+- [x] Inspect 19 client static assets and 2,660 generated HTML/RSC files; prove Next rejects an intentional client import of a `server-only` module.
+- [x] Capture and compare Page 1/2/3 at requested widths; document the separate public proxy 403 honestly.
+- [x] Update the project brain, task/test/bug records and Phase 2 reports locally; no push.
 - [ ] Obtain owner approval of Page 3 and its disclosed deviations.
 - [ ] Receive authorized provider URLs plus per-link evidence before any real destination is activated.
 
 ## Immediate owner inputs
 
 1. Approve or request changes to the Phase 2 homepage and movie-detail visual match using `.artifacts/phase2/comparison-primary-top.png`, `.artifacts/phase2/comparison-detail-top.png` and the live preview.
-2. Accept or amend the documented safety/accessibility deviations: AZmovies branding, synthetic posters, inert Telegram/app/footer controls, “How To Watch?” wording, darkened AA pill colors, and the Page 3 items in `PAGE3_REPORT.md` §8 (derived styling, inert Continue, unauthenticated prototype link manager).
+2. Accept or amend the documented safety/accessibility deviations: AZmovies branding, synthetic posters, inert Telegram/app/footer controls, “How To Watch?” wording, darkened AA pill colors and the derived Page 3 design with disabled Continue and isolated unauthenticated demo manager.
 3. Optionally supply the missing third MOVIES4U screenshot; the received primary MOVIES4U set contains two files, not three.
 4. Before Phase 3: provision approved PostgreSQL, confirm admin owner/MFA/recovery custody and confirm authorized destination/content policy.
 5. Before Phase 4/5: supply official Telegram URL, authorized external-link inventory (including detail quality/watch provider URLs) and metadata permission/provider decision.
@@ -77,7 +75,7 @@
 ## Phase 4 — public catalog/redirects
 
 - [ ] Connect published catalog/detail/search/filter/pagination to PostgreSQL.
-- [ ] Implement fresh opaque redirect checks and safe failure behavior.
+- [ ] Implement fresh server-side redirect checks behind descriptive selectors, keeping internal IDs and stored targets private.
 - [ ] Configure validated official Telegram link.
 - [ ] Execute functional/responsive/accessibility/redirect/cache-isolation tests.
 - [ ] Record reference regression evidence; stop for approval.

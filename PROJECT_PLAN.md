@@ -2,7 +2,7 @@
 
 ## Status and scope control
 
-Phase 1 is the foundation deliverable. **No website implementation has begun.** Each phase needs an explicit owner go-ahead; completion of tests does not itself authorize the next phase. Dates are not promised: dependencies such as screenshots, licensing and infrastructure affect sequencing.
+Phase 1 is complete and the static Phase 2 prototype is implemented locally. **Phase 2 owner approval is pending; Phase 3 has not begun.** Each phase needs an explicit owner go-ahead; completion of tests does not itself authorize the next phase. Dates are not promised: screenshots, licensing and infrastructure affect sequencing.
 
 ## Product acceptance baseline
 
@@ -26,7 +26,7 @@ A released AZmovies must provide:
 
 ## Phase 2 — Toolchain and reference-faithful visual shell
 
-**Status:** delivered locally on 2026-11-07; scoped tests/captures/comparison executed; owner visual approval pending before Phase 3.
+**Status:** final homepage/detail/Page 3 refinement and isolated manager demo completed locally; scoped tests, captures and comparisons executed. Owner approval is pending before Phase 3; no GitHub push was made.
 
 **Entry:** Q-01/Q-02/Q-03 sufficiently resolved; screenshots available for meaningful visual sign-off. If not, the owner may approve only nonvisual tooling setup, not final UI fidelity.
 
@@ -36,8 +36,9 @@ A released AZmovies must provide:
 2. Establish strict lint/type/test scripts, CSS tokens, fixture types and accessible primitives.
 3. Build only the specified header, search presentation, category strip, two-column cards, sidebar, pagination presentation, footer and configured Telegram-link treatment.
 4. Build a fixture-backed detail layout and honest loading/empty/error states; no live movie links.
-5. Add component tests, keyboard/focus checks and repeatable viewport captures.
-6. Compare against supplied references using `UI_GUIDELINES.md`; document differences rather than redesigning.
+5. Add a static, default-deny intermediate handoff and an isolated session-only CRUD demo without exposing server link IDs or stored targets; no real redirect.
+6. Add component, privacy, keyboard/focus, accessibility and responsive checks plus repeatable viewport captures.
+7. Compare against supplied references using `UI_GUIDELINES.md`; document differences rather than redesigning.
 
 **Exit evidence:** actual install/build/lint/type/component results; desktop/mobile captures; owner visual approval. Browser execution blockers must be resolved through an approved environment, not hidden.
 
@@ -64,7 +65,7 @@ A released AZmovies must provide:
 
 1. Connect server-rendered home/category/search/detail pages to persisted published records.
 2. Implement bounded search, combined filters, stable numeric pagination and URL state.
-3. Implement the opaque redirect route with fresh destination/approval checks and safe failure behavior.
+3. Implement a public descriptive-selection handoff with fresh server-side destination/approval checks and safe failure behavior; never expose internal link/database IDs or stored targets.
 4. Add responsive/functional/accessibility tests and cache-leakage checks.
 5. Activate only the owner-provided Telegram destination after validation.
 

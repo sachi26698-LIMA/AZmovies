@@ -15,17 +15,28 @@ describe('movie detail prototype', () => {
     expect(screen.getByRole('region', { name: 'Detailed movie information' })).toHaveTextContent(
       'Director:',
     );
-    expect(
-      screen.getByRole('region', { name: 'Scrollable movie screenshot gallery' }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Movie screenshot gallery' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Quality options' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Watch options' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Related movies' })).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
     // Page 3 flow: options now open an internal intermediate page, never an external host.
-    const providerOption = screen.getByRole('link', { name: /authorized provider a/i });
-    expect(providerOption.getAttribute('href')).toMatch(/^\/go\/lnk-\d{4}\/?$/);
+    const providerOption = screen.getByRole('link', { name: /fixture provider a/i });
+    expect(providerOption.getAttribute('href')).toMatch(
+      /^\/go\/the-odyssey-protocol-2\/provider-a\/?$/,
+    );
     expect(document.querySelectorAll('a[href^="http"]')).toHaveLength(0);
+  });
+
+  it('does not claim multi-audio or dubbing for a single-language fixture', () => {
+    const detail = getMovieDetail('the-great-indian-comedy-night-5')!;
+    render(<MovieDetailPrototype detail={detail} />);
+    expect(screen.getByRole('list', { name: 'Release date and genres' })).not.toHaveTextContent(
+      /dual audio|multi audio/i,
+    );
+    const info = screen.getByRole('region', { name: 'Detailed movie information' });
+    expect(info).not.toHaveTextContent(/dubbed/i);
+    expect(info).toHaveTextContent('Hindi');
   });
 
   it('has no serious jsdom axe violations outside canvas-dependent visual rules', async () => {

@@ -29,7 +29,7 @@ Mock external metadata responses in deterministic tests, but run a separate perm
 
 ### Available now
 
-Node 22.22.3/npm/Git/GitHub CLI are present. No application dependencies, PostgreSQL server, Docker or browser executables were found. Terminal TMDB and Playwright CDN probes failed. npm registry reads and GitHub read-only API access succeeded.
+Node 22.22.3/npm/Git/GitHub CLI and the pinned application dependencies are present. Chromium runs through `@sparticuz/chromium` with documented sandbox workarounds. No PostgreSQL server/client, Docker, Firefox or WebKit was provisioned. Terminal TMDB and Playwright CDN probes failed; npm registry reads and GitHub read-only access succeeded.
 
 ### Required after approval
 
@@ -49,25 +49,23 @@ The following scripts exist and were executed in Phase 2 unless noted:
 npm run format:check      # pass
 npm run typecheck         # pass
 npm run lint              # pass
-npm run verify:static     # pass; static fixture boundary report
-npm run test              # pass; 52 Vitest unit/component tests (incl. Page 3 policy/store/fixtures)
-npm run build             # pass; 532 static pages (480 Page 3 + 48 detail + home/admin/not-found)
-npx playwright test       # pass; 30 Chromium functional/a11y/responsive tests (incl. Page 3 + link manager)
-npm run test:a11y         # available subset of Playwright @a11y tests
-npm run test:responsive   # available subset of Playwright @responsive tests
+npm run verify:static     # pass; 35 static fixture source files
+npm run test              # pass; 52/52 Vitest unit/component tests
+npm run test:coverage     # pass; 52/52, configured components/lib: 83.14% statements, 77.27% branches
+npm run build             # pass; 532 static pages
+npm run verify:public-boundary # pass after build; 19 assets, 2,660 generated HTML/RSC payloads
+npx playwright test       # pass; 36/36 Chromium functional/a11y/responsive tests
+npm run test:e2e          # pass; rebuild and the same 36/36 Chromium tests
+npm run test:a11y         # pass; 3/3 overlapping @a11y tests
+npm run test:responsive   # pass; 19/19 overlapping @responsive tests
 npm run analyze:references # executed; reference samples/crops
 npm run capture:prototype  # executed; prototype screenshots/metrics
 npm run compare:visual     # executed; aligned primary-top comparison
 ```
 
-Playwright and capture use `@sparticuz/chromium`; the sandbox requires bundled AL2023 NSS/NSPR library extraction and omission of `--single-process`. The default target is `http://127.0.0.1:3000`; override with `PROTOTYPE_URL`. Coverage, Lighthouse, cross-browser engines, real-device, screen-reader, database/API/auth and live-provider commands remain future work and are not claimed.
+Playwright and capture use `@sparticuz/chromium`; the sandbox requires bundled AL2023 NSS/NSPR library extraction and omission of `--single-process`. The default capture target is `http://127.0.0.1:3000`; override with `PROTOTYPE_URL`. Coverage is limited to configured component/lib files, excluding routes and `fixtures.ts`; no threshold is enforced. Lighthouse, cross-browser engines, real-device, screen-reader, database/API/auth and live-provider tests remain future work and are not claimed.
 
-Page 3 adds three mandatory scenario groups, all executed on 2026-11-08: destination mapping (each
-link id resolves to its own stored URL, across providers and movies), rejection (invalid/unsafe/
-non-approved URLs, disabled links, unknown ids, injected query targets), and navigation
-(homepage→detail→option→Page 3→back, plus admin changes reflected on the public page). Activation-on
-behaviour is covered by unit tests of `resolveContinue` only; no test navigates to a real external
-host, because none is authorized.
+Page 3 checks cover all 480 server-only fixture mappings in unit simulations; invalid/unsafe URLs, disabled and unknown choices, query injection, HTML/client-JS/navigation-RSC privacy, the full browser journey and the isolated demo's lack of public/server effects. A negative Next build probe confirmed that importing a `server-only` module into a client component fails. Activation-on policy behavior is unit-only; no test navigates to a real external host. The build-signature scanner is scoped to current synthetic fixture patterns and is not a general secret scanner.
 
 ## 5. Continuous integration plan
 
@@ -109,7 +107,7 @@ Use least-privilege workflow permissions and protected secrets. A GitHub Actions
 - Medium: isolated UI/metadata/performance issue with a safe workaround. Owner may accept a documented exception.
 - Low: cosmetic/minor documentation issue; track and schedule.
 
-Initial coverage aim: at least 90% statements/branches for security-sensitive pure policy/validation modules, with mandatory negative cases; do not use a global percentage as a substitute for integration/E2E coverage. Actual coverage thresholds are configured and measured in Phase 2/3.
+Initial coverage aim: at least 90% statements/branches for security-sensitive pure policy/validation modules, with mandatory negative cases; do not use a global percentage as a substitute for integration/E2E coverage. The final V8 run measured `link-policy.ts` at 94.82% statements/93.33% branches. Its configured component/lib scope excludes routes and `fixtures.ts`, and no automatic coverage threshold is currently enforced.
 
 A phase exits only when its scoped checks run, failures are resolved or explicitly blocked, reference/security gates are satisfied and the report distinguishes real results from remaining work. Owner approval is still required before proceeding.
 

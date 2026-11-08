@@ -81,10 +81,12 @@ export function MovieDetailPrototype({ detail }: MovieDetailPrototypeProps) {
               {genre}
             </li>
           ))}
-          <li className={styles.chip}>
-            <FolderIcon size={14} className={styles.inlineIcon} />
-            Dual Audio
-          </li>
+          {movie.languages.length > 1 ? (
+            <li className={styles.chip}>
+              <FolderIcon size={14} className={styles.inlineIcon} />
+              {movie.languages.length > 2 ? 'Multi Audio' : 'Dual Audio'}
+            </li>
+          ) : null}
         </ul>
 
         <hr className={styles.rule} />
@@ -111,11 +113,11 @@ export function MovieDetailPrototype({ detail }: MovieDetailPrototypeProps) {
 
         <section className={styles.infoSection} aria-label="Detailed movie information">
           <h2 className={styles.infoTitle}>
-            {movie.title} ({movie.languages[0]} Dubbed)
+            {movie.title} ({movie.languages.join(' + ')})
           </h2>
           <dl className={styles.infoList}>
             <div className={styles.infoRow}>
-              <dt>iMDB Rating:</dt> <dd className={styles.blueText}>{detail.ratingLabel}</dd>
+              <dt>Fixture rating:</dt> <dd className={styles.blueText}>{detail.ratingLabel}</dd>
             </div>
             <div className={styles.infoRow}>
               <dt>Genre:</dt> <dd>{detail.genres.join(' | ')}</dd>
@@ -147,7 +149,9 @@ export function MovieDetailPrototype({ detail }: MovieDetailPrototypeProps) {
           aria-label="Quality options"
         >
           <h2 className={styles.sectionTitle}>
-            {movie.title} ({movie.year}) Fixture Movie Multi-Audio [Hindi &amp; English] HD
+            {movie.title} ({movie.year}) Fixture Movie{' '}
+            {movie.languages.length > 1 ? 'Multi-Audio' : 'Audio'} [{movie.languages.join(' & ')}]{' '}
+            {movie.quality}
           </h2>
           <h3 className={styles.redHeading}>: QUALITY OPTIONS :</h3>
           <LinkOptionList label="Quality option placeholders" options={detail.qualityOptions} />
@@ -214,7 +218,7 @@ export function MovieDetailPrototype({ detail }: MovieDetailPrototypeProps) {
           <h2 className={styles.sectionTitle}>Related movies</h2>
           <ul className={styles.relatedGrid}>
             {detail.related.map((relatedMovie) => (
-              <li key={relatedMovie.id}>
+              <li key={relatedMovie.slug}>
                 <MovieCard movie={relatedMovie} />
               </li>
             ))}

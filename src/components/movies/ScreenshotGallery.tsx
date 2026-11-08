@@ -8,12 +8,7 @@ interface ScreenshotGalleryProps {
 
 export function ScreenshotGallery({ screenshots }: ScreenshotGalleryProps) {
   return (
-    <div
-      className={styles.gallery}
-      tabIndex={0}
-      role="region"
-      aria-label="Scrollable movie screenshot gallery"
-    >
+    <div className={styles.gallery} role="region" aria-label="Movie screenshot gallery">
       {screenshots.map((shot) => (
         <Image
           key={shot.src}

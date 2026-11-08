@@ -1,16 +1,12 @@
-import { getLinkById } from '@/lib/link-fixtures';
-import { isSafeLinkId, resolveContinue, type DenialReason } from '@/lib/link-policy';
+import { intermediatePath } from '@/lib/link-catalog';
+import { getLinkForOption } from '@/lib/link-fixtures';
+import { resolveContinue, type DenialReason } from '@/lib/link-policy';
 import { EXTERNAL_ACTIVATION_ENABLED } from '@/lib/redirect-config';
 
 /**
- * Continue endpoint for the intermediate page.
- *
- * The target is resolved only from the stored link record identified by the opaque
- * path id. Query parameters, headers, cookies and request bodies are never read as a
- * destination, so this route cannot be used as an open redirect.
- *
- * While EXTERNAL_ACTIVATION_ENABLED is false (prototype default, owner approval
- * required) every request is denied with a safe page and no Location header.
+ * The public path identifies a movie and option, not an internal record ID.
+ * Only the server fixture inventory supplies the destination. Request query
+ * parameters, headers, cookies and bodies are never used as a target.
  */
 export const dynamic = 'force-dynamic';
 
@@ -46,9 +42,12 @@ function denialPage(message: string, backHref: string, status: number): Response
   });
 }
 
-export async function GET(_request: Request, context: { params: Promise<{ linkId: string }> }) {
-  const { linkId } = await context.params;
-  const link = isSafeLinkId(linkId) ? getLinkById(linkId) : undefined;
+export async function GET(
+  _request: Request,
+  context: { params: Promise<{ movieSlug: string; optionSlug: string }> },
+) {
+  const { movieSlug, optionSlug } = await context.params;
+  const link = getLinkForOption(movieSlug, optionSlug);
   const decision = resolveContinue(link, { activationEnabled: EXTERNAL_ACTIVATION_ENABLED });
 
   if (decision.action === 'redirect') {
@@ -58,6 +57,7 @@ export async function GET(_request: Request, context: { params: Promise<{ linkId
     });
   }
 
-  const backHref = link ? `/go/${link.id}/` : '/';
+  // The back link is constructed only from a trusted matched fixture, not the request.
+  const backHref = link ? intermediatePath(link.movieSlug, link.optionSlug) : '/';
   return denialPage(decision.message, backHref, denialStatus[decision.reason]);
 }

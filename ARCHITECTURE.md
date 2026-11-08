@@ -1,6 +1,6 @@
 # AZmovies — Proposed Architecture
 
-**Status:** Phase 2 static prototype subset implemented locally. The public fixture shell, components, styles, tests and scripts exist; server/database/auth/admin/API/redirect/metadata modules below remain planned and unimplemented.
+**Status:** Phase 2 static-fixture shell, server-only destination inventory, default-deny route and isolated session-demo manager are implemented locally. No database, authentication, production admin, catalog API, live redirect or metadata integration exists; later-phase modules below are planned.
 
 ## 1. Architecture goals
 
@@ -28,7 +28,7 @@
 | Quality                    | ESLint 9.39.4 with Next rules, Prettier 3.9.10, strict `tsc`                        | Stable lint baseline satisfying Next's >=9 peer requirement; formatting/type gates                         |
 | Performance                | Lighthouse CI plus HTTP/database timings                                            | Separate lab browser metrics from server/database evidence                                                 |
 
-Versions were read from npm metadata on 2026-11-07, not installed or integration-tested. Phase 2 must resolve a single compatible lockfile, audit it and record the actual chosen versions. Do not blindly upgrade everything or mix the listed candidates with incompatible plugins.
+Candidate versions were originally read from npm metadata. Phase 2 installed and built the pinned Next/React toolchain and lockfile; PostgreSQL, Drizzle and Better Auth are not installed or integration-tested. Do not blindly upgrade or mix incompatible plugins.
 
 ## 3. Alternatives considered
 
@@ -46,7 +46,7 @@ Versions were read from npm metadata on 2026-11-07, not installed or integration
 Visitor browser
   -> Next.js public pages / public read API
   -> catalog query service -> PostgreSQL (published records only)
-  -> /r/{linkId} -> fresh redirect policy/approval check -> authorized HTTPS page
+  -> /r/{movieSlug}/{optionSlug} -> server-side approval check -> authorized HTTPS page (future only)
 
 Admin browser
   -> private admin pages / admin API
@@ -71,7 +71,7 @@ src/
     api/auth/[...all]/        # Better Auth handler, restricted configuration
     api/admin/                # protected write/read endpoints
     api/internal/             # scheduler endpoint only if approved
-    r/[linkId]/               # validated external redirect
+    r/[movieSlug]/[optionSlug]/ # server-resolved, default-deny handoff
   proxy.ts                    # optimistic navigation checks, not sole authorization
   components/
     layout/                   # header, category strip, sidebar, footer, Telegram
@@ -85,7 +85,7 @@ src/
     audit/                    # redacted append-only audit writer
     config/                   # validated server environment
     db/                       # client, schema, migrations, transaction helpers
-  lib/                        # pure shared formatting/validation; no server secrets
+  lib/                        # shared helpers and explicitly server-only fixture inventory
   styles/                     # tokens/reset and scoped component styling
 public/                       # owned brand/static assets only; no bulk movie media
  tests/
@@ -145,30 +145,27 @@ Planned interface responsibilities: search by title/provider ID, fetch details, 
 1. Admin registers an exact HTTPS destination host and optional path-prefix boundary.
 2. Admin attaches a movie link with authorization evidence and requests approval.
 3. A separate approval action records approver/time; imported or newly entered links are pending by default.
-4. Public UI exposes only an opaque `/r/{linkId}` URL for a published movie.
+4. Public UI exposes only descriptive movie/option selectors; internal link/database IDs, authorization evidence and raw targets remain server-side.
 5. At click time, recheck movie status, link approval/expiry/revocation and active destination policy; reject credentials, non-HTTPS schemes, unexpected ports/hosts and malformed paths.
 6. Return a fresh 303 response with `Cache-Control: no-store` and a restrictive referrer policy. Never accept a caller-supplied target URL.
 7. Revocation takes effect without waiting for page-cache expiry. Availability checks do not auto-authorize a changed destination.
 
 A domain being legitimate does not authorize every page on it. Per-link evidence remains necessary. No file-download, torrent, magnet, embedded player or shortener destination is allowed.
 
-### Implemented prototype subset (Page 3, 2026-11-08)
+### Implemented prototype subset (final Phase 2)
 
-| Module                         | Responsibility                                                                                   |
-| ------------------------------ | ------------------------------------------------------------------------------------------------ |
-| `src/lib/link-fixtures.ts`     | 480 stored link records (48 movies × 10 options); unique opaque id and unique target per link    |
-| `src/lib/link-policy.ts`       | Pure default-deny destination validation and `resolveContinue` decision; no request input        |
-| `src/lib/redirect-config.ts`   | Hard-coded owner activation switch, currently `false`                                            |
-| `src/lib/link-store.ts`        | Browser-session fixture overrides for the prototype manager (`sessionStorage`); not a data layer |
-| `src/app/go/[linkId]/page.tsx` | Page 3 intermediate screen; SSG for fixture ids, on-demand for session-added ids                 |
-| `src/app/r/[linkId]/route.ts`  | Dynamic Continue endpoint; fresh policy check, 303 only when every gate passes                   |
-| `src/components/links/`        | `IntermediateLinkPrototype`, `LinkManagerPrototype`                                              |
+| Module                                         | Responsibility                                                                           |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `src/lib/link-catalog.ts`                      | Public descriptions and movie/option selectors, with no target URLs or server-record IDs |
+| `src/lib/link-fixtures.ts`                     | `server-only` inventory of 480 synthetic records and their reserved-example targets      |
+| `src/lib/link-policy.ts`                       | Exact-host HTTPS validation and pure default-deny policy                                 |
+| `src/lib/redirect-config.ts`                   | Hard-coded activation switch, `false`                                                    |
+| `src/lib/link-store.ts`                        | Isolated v2 browser-session demo state; never a server data layer                        |
+| `src/app/go/[movieSlug]/[optionSlug]/page.tsx` | SSG handoff constructs an explicit safe client view model                                |
+| `src/app/r/[movieSlug]/[optionSlug]/route.ts`  | Server resolves the trusted selection, rechecks policy and denies in prototype mode      |
+| `src/components/links/`                        | Public handoff and isolated link-manager demo                                            |
 
-Data flow: the detail option carries only a `linkId` → Page 3 looks the record up by id → Continue
-navigates to `/r/{linkId}/` → the route re-resolves the stored record server-side. The destination
-never travels through the client, the URL query string or a request body. Replacing `link-store.ts`
-with authenticated, persisted Drizzle queries is the persistence-phase boundary; the policy module
-and route contract are intended to survive that change unchanged.
+The detail page links to descriptive selectors. Page 3 resolves a server-only record but serializes only the movie, quality, provider, safe local action and denial state. Continue is natively disabled. The route never reads a destination from request input. The manager validates and discards its test URL; edits affect only v2 session demo state, not the public catalog or server mapping. Old v1 session data is deliberately not read, migrated or deleted. A future persisted authenticated admin is new work, not a replacement already implemented by this demo.
 
 ## 10. Configuration, deployment and operations
 
@@ -183,4 +180,4 @@ and route contract are intended to survive that change unchanged.
 
 ## 11. Architecture acceptance
 
-No framework choice is considered validated until Phase 2 installs/builds it. No auth/data design is considered validated until real PostgreSQL/HTTP tests run. No external integration is considered permitted or reachable until the respective evidence exists. Architecture changes must update the schema/API/security/tests documents together.
+The installed Next/React fixture toolchain has passed a Phase 2 production build; this does not validate the future auth/data architecture. No auth/data design is validated until real PostgreSQL/HTTP tests run. No external integration is permitted or reachable until the respective evidence exists. Architecture changes must update the schema/API/security/tests documents together.

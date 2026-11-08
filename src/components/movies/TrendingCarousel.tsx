@@ -12,7 +12,7 @@ export function TrendingCarousel({ movies }: TrendingCarouselProps) {
     <section className={styles.trending} aria-label="Trending movies">
       <ul className={styles.trendingList}>
         {movies.map((movie) => (
-          <li key={movie.id} className={styles.trendingItem}>
+          <li key={movie.slug} className={styles.trendingItem}>
             <Link href={`/movies/${movie.slug}/`} aria-label={`${movie.title} detail`}>
               <Image
                 src={posterSrc(movie.poster)}

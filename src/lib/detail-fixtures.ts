@@ -1,13 +1,18 @@
 import { getMovie, MOVIES, type MovieFixture } from '@/lib/fixtures';
-import { getLinksForMovie, type ProviderLinkFixture } from '@/lib/link-fixtures';
+import {
+  getPublicLinksForMovie,
+  intermediatePath,
+  type PublicLinkFixture,
+} from '@/lib/link-catalog';
 
 export interface LinkPlaceholder {
-  id: string;
+  /** Descriptive public slug, not an internal link-record ID. */
+  optionSlug: string;
   label: string;
   href: string | null;
   note: string;
-  /** Opaque Page 3 intermediate-link id. Null for non-link placeholders (trailer). */
-  linkId: string | null;
+  disabled: boolean;
+  emphasized: boolean;
 }
 
 export interface ScreenshotFixture {
@@ -62,21 +67,19 @@ const directorByPoster: Record<MovieFixture['poster'], string> = {
   romance: 'N. Mathew',
 };
 
-function placeholder(id: string, label: string, note: string): LinkPlaceholder {
-  return { id, label, href: null, note, linkId: null };
+function placeholder(optionSlug: string, label: string, note: string): LinkPlaceholder {
+  return { optionSlug, label, href: null, note, disabled: true, emphasized: false };
 }
 
-/**
- * Detail option lists keep their approved labels/notes; each option now also carries
- * the opaque id of its own intermediate link page. No external href is ever set here.
- */
-function optionPlaceholder(link: ProviderLinkFixture): LinkPlaceholder {
+/** Public detail props contain only descriptive selectors and never server records. */
+function optionPlaceholder(link: PublicLinkFixture): LinkPlaceholder {
   return {
-    id: link.optionKey,
+    optionSlug: link.optionSlug,
     label: link.label,
-    href: null,
+    href: intermediatePath(link.movieSlug, link.optionSlug),
     note: link.note,
-    linkId: link.id,
+    disabled: link.status === 'disabled',
+    emphasized: link.emphasized,
   };
 }
 
@@ -97,20 +100,20 @@ export function getMovieDetail(slug: string): MovieDetailFixture | undefined {
   const genres = genreByPoster[movie.poster];
   const rating = (7.2 + (index % 9) * 0.1).toFixed(1);
 
-  const movieLinks = getLinksForMovie(movie.slug);
-  const optionsFor = (keys: string[]) =>
-    keys
-      .map((key) => movieLinks.find((link) => link.optionKey === key))
-      .filter((link): link is ProviderLinkFixture => Boolean(link))
+  const movieLinks = getPublicLinksForMovie(movie.slug);
+  const optionsFor = (slugs: string[]) =>
+    slugs
+      .map((slug) => movieLinks.find((link) => link.optionSlug === slug))
+      .filter((link): link is PublicLinkFixture => Boolean(link))
       .map(optionPlaceholder);
 
   const qualityOptions = optionsFor([
-    'q-480',
-    'q-720-hevc',
-    'q-720-x264',
-    'q-1080-hevc',
-    'q-1080-x264',
-    'q-hq-1080',
+    '480p',
+    '720p-10bit-hevc',
+    '720p-x264',
+    '1080p-10bit-hevc',
+    '1080p-x264',
+    '1080p-hq',
   ]);
   const watchOptions = optionsFor(['watch-online', 'watch-4k']);
   const providerLinks = optionsFor(['provider-a', 'provider-b']);
@@ -127,7 +130,10 @@ export function getMovieDetail(slug: string): MovieDetailFixture | undefined {
     ratingLabel: `${rating}/10`,
     cast: castByPoster[movie.poster],
     director: directorByPoster[movie.poster],
-    languageLabel: `Multi Audio [[${movie.languages.join(' + ')}]] / ESubs`,
+    languageLabel:
+      movie.languages.length > 1
+        ? `Multi Audio [[${movie.languages.join(' + ')}]] / ESubs`
+        : `${movie.languages[0]} / ESubs`,
     qualityLabel: `${movie.quality} 1080p | 720p | 480p`,
     storyline: `${movie.title} is a synthetic fixture synopsis: a wandering hero faces impossible choices, distant seas and fragile alliances while trying to return home. This placeholder description exists only for the Phase 2 visual prototype.`,
     reviewLabel: 'N/A — placeholder review. Please use the future comment section after release.',

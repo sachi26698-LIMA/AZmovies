@@ -75,25 +75,30 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px 12px;
+  gap: 7px;
+}
+
+.categorySpecialGrid .categoryButton {
+  min-height: 36px;
+  font-weight: 500;
 }
 
 .categoryRows {
   display: grid;
-  gap: 8px;
-  margin-top: 12px;
+  gap: 7px;
+  margin-top: 16px;
 }
 
 .categoryRow {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .categoryButton {
   min-height: var(--category-height);
-  padding: 0 14px;
+  padding: 0 19px;
   border: 0;
   border-radius: var(--radius-category);
   color: var(--color-text);
@@ -134,7 +139,7 @@
 }
 
 .gridSection {
-  margin: 12px var(--space-grid-gutter) 0;
+  margin: 20px var(--space-grid-gutter) 0;
 }
 
 .grid {
@@ -423,13 +428,13 @@
   .categoryButton {
     min-width: 0;
     padding: 0 8px;
-    font-size: 12px;
+    font-size: 11px;
     letter-spacing: 0;
+    white-space: nowrap;
   }
 
   .categoryRow .categoryButton {
-    flex: 1 1 0;
-    overflow: hidden;
+    flex: 0 1 auto;
   }
 
   .paginationButton,

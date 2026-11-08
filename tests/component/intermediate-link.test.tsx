@@ -1,88 +1,62 @@
-import { render, screen, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { act, render, screen, within } from '@testing-library/react';
 import axe, { type AxeResults } from 'axe-core';
-import { act } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
-import { IntermediateLinkPrototype } from '@/components/links/IntermediateLinkPrototype';
-import { PROVIDER_LINKS, getLinkById } from '@/lib/link-fixtures';
-import { EMPTY_LINK_STATE, writeLinkState } from '@/lib/link-store';
+import { describe, expect, it } from 'vitest';
+import {
+  IntermediateLinkPrototype,
+  type HandoffSummary,
+} from '@/components/links/IntermediateLinkPrototype';
+import { PUBLIC_LINKS, continuePath } from '@/lib/link-catalog';
 
-const enabledLink = PROVIDER_LINKS.find((link) => link.status === 'enabled')!;
-const disabledLink = PROVIDER_LINKS.find((link) => link.status === 'disabled')!;
+const link = PUBLIC_LINKS.find((item) => item.status === 'enabled')!;
+const summary: HandoffSummary = {
+  movieSlug: link.movieSlug,
+  movieTitle: link.movieTitle,
+  quality: link.quality,
+  providerName: link.providerName,
+  continueHref: continuePath(link.movieSlug, link.optionSlug),
+  canContinue: false,
+  continueMessage: 'External destinations are disabled in this prototype.',
+};
 
-beforeEach(() => {
-  writeLinkState(EMPTY_LINK_STATE);
-  window.sessionStorage.clear();
-});
-
-describe('intermediate link page (Page 3)', () => {
-  it('shows the selected movie, quality, provider and exact stored destination', () => {
-    render(<IntermediateLinkPrototype linkId={enabledLink.id} />);
+describe('public intermediate link page', () => {
+  it('shows only the movie, quality, provider and continue information', () => {
+    const { container } = render(<IntermediateLinkPrototype selection={summary} />);
     const details = screen.getByRole('region', { name: 'Selected link details' });
-    expect(
-      within(details).getByText(enabledLink.movieTitle, { selector: 'h2' }),
-    ).toBeInTheDocument();
-    expect(within(details).getByText(enabledLink.quality)).toBeInTheDocument();
-    expect(within(details).getByText(enabledLink.providerName)).toBeInTheDocument();
-    expect(screen.getByTestId('stored-destination')).toHaveTextContent(enabledLink.targetUrl);
-    expect(screen.getByRole('link', { name: /back to movie details/i }).getAttribute('href')).toBe(
-      `/movies/${enabledLink.movieSlug}`,
+    expect(within(details).getByText(link.movieTitle)).toBeInTheDocument();
+    expect(within(details).getByText(link.quality)).toBeInTheDocument();
+    expect(within(details).getByText(link.providerName)).toBeInTheDocument();
+    expect(within(details).getAllByRole('term')).toHaveLength(3);
+    expect(container.textContent).not.toMatch(
+      /link reference|stored destination|lnk-\d{4}|https?:\/\//i,
     );
     expect(document.querySelectorAll('a[href^="http"]')).toHaveLength(0);
-  });
-
-  it('offers a prominent Continue control that stays inert while activation is off', async () => {
-    const user = userEvent.setup();
-    render(<IntermediateLinkPrototype linkId={enabledLink.id} />);
-    const continueButton = screen.getByRole('button', { name: /continue/i });
-    expect(continueButton).toHaveAttribute('aria-disabled', 'true');
-    expect(continueButton).toHaveAccessibleDescription(/not activated in this prototype/i);
-    await user.click(continueButton);
-    expect(screen.getByRole('status')).toHaveTextContent(/owner approval is required/i);
-    expect(window.location.pathname).toBe('/');
-  });
-
-  it('renders the disabled state for an individually disabled link', () => {
-    render(<IntermediateLinkPrototype linkId={disabledLink.id} />);
-    expect(screen.getByText('Disabled by administrator')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /continue/i })).toHaveAttribute(
-      'aria-disabled',
-      'true',
+    expect(screen.getByRole('link', { name: /back to movie details/i })).toHaveAttribute(
+      'href',
+      expect.stringMatching(new RegExp(`^/movies/${link.movieSlug}/?$`)),
     );
-    expect(screen.getByText(/disabled by the site administrator/i)).toBeInTheDocument();
   });
 
-  it('treats deleted and unknown links as unavailable without showing a destination', () => {
-    writeLinkState({ overrides: { [enabledLink.id]: { deleted: true } }, added: [] });
-    const { unmount } = render(<IntermediateLinkPrototype linkId={enabledLink.id} />);
-    expect(screen.getByRole('heading', { name: 'Link not available' })).toBeInTheDocument();
-    expect(screen.queryByTestId('stored-destination')).not.toBeInTheDocument();
-    unmount();
-    render(<IntermediateLinkPrototype linkId="lnk-9999" />);
-    expect(screen.getByRole('heading', { name: 'Link not available' })).toBeInTheDocument();
+  it('uses a genuinely disabled Continue button and an internal-only form action', () => {
+    render(<IntermediateLinkPrototype selection={summary} />);
+    const button = screen.getByRole('button', { name: /continue/i });
+    expect(button).toBeDisabled();
+    expect(button).toHaveAccessibleDescription(/disabled in this prototype/i);
+    expect(button.closest('form')).toHaveAttribute('action', summary.continueHref);
   });
 
-  it('reflects an individual prototype edit without changing sibling links', () => {
-    writeLinkState({
-      overrides: {
-        [enabledLink.id]: {
-          quality: '2160p REMUX',
-          providerName: 'Fixture Provider Beta',
-          targetUrl: 'https://beta.example.com/watch/edited/2160p',
-        },
-      },
-      added: [],
-    });
-    render(<IntermediateLinkPrototype linkId={enabledLink.id} />);
-    expect(screen.getByText('2160p REMUX')).toBeInTheDocument();
-    expect(screen.getByTestId('stored-destination')).toHaveTextContent(
-      'https://beta.example.com/watch/edited/2160p',
+  it('explains an individually disabled option without exposing internal details', () => {
+    render(
+      <IntermediateLinkPrototype
+        selection={{ ...summary, continueMessage: 'This option is currently unavailable.' }}
+      />,
     );
-    expect(getLinkById(enabledLink.id)?.targetUrl).toBe(enabledLink.targetUrl);
+    expect(screen.getByText('This option is currently unavailable.')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /continue/i })).toBeDisabled();
+    expect(screen.queryByText(/link reference|stored destination/i)).not.toBeInTheDocument();
   });
 
   it('has no serious jsdom axe violations outside canvas-dependent visual rules', async () => {
-    const { container } = render(<IntermediateLinkPrototype linkId={enabledLink.id} />);
+    const { container } = render(<IntermediateLinkPrototype selection={summary} />);
     let results: AxeResults | null = null;
     await act(async () => {
       results = await axe.run(container, {
