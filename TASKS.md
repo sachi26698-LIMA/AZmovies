@@ -1,6 +1,17 @@
 # AZmovies — Task and Approval Queue
 
-**Current gate:** Phase 2 static visual prototype review. **Phase 3 is blocked until the owner explicitly approves the prototype and the documented deviations.**
+**Current gate:** Phase 2 static visual prototype review after PR #1 merged. **Phase 3 is blocked until the owner explicitly approves the prototype and the documented deviations.**
+
+## Post-merge verification
+
+- [x] Verify PR #1 merged and the initially clean session checkout matched `main` at merge commit `72f3ed4`.
+- [x] Rebuild/start the merged production app, rerun 52/52 unit/component and 36/36 Chromium browser tests, and capture the three-page journey at 360/390 px.
+- [x] Investigate the separate unauthenticated preview 403 and record the limits of local iframe and gateway observations.
+- [x] Record the post-merge results and full-vs-runtime dependency audit distinction in `PHASE2_REPORT.md`.
+- [ ] Review the moderate development-tooling audit advisory and its compatible remediation without silently changing the lockfile (BUG-018).
+- [ ] Obtain explicit owner approval before any Phase 3 work.
+
+The “no push” notes below describe the pre-merge checkpoints when they were recorded.
 
 ## Phase 1 — foundation
 

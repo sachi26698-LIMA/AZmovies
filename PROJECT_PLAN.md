@@ -2,7 +2,7 @@
 
 ## Status and scope control
 
-Phase 1 is complete and the static Phase 2 prototype is implemented locally. **Phase 2 owner approval is pending; Phase 3 has not begun.** Each phase needs an explicit owner go-ahead; completion of tests does not itself authorize the next phase. Dates are not promised: screenshots, licensing and infrastructure affect sequencing.
+Phase 1 is complete and the static Phase 2 prototype was merged in PR #1. Post-merge verification was performed on the same commit as `main`. **Phase 2 owner approval is pending; Phase 3 has not begun.** Each phase needs an explicit owner go-ahead; completion of tests does not itself authorize the next phase. Dates are not promised: screenshots, licensing and infrastructure affect sequencing.
 
 ## Product acceptance baseline
 
@@ -26,7 +26,7 @@ A released AZmovies must provide:
 
 ## Phase 2 — Toolchain and reference-faithful visual shell
 
-**Status:** final homepage/detail/Page 3 refinement and isolated manager demo completed locally; scoped tests, captures and comparisons executed. Owner approval is pending before Phase 3; no GitHub push was made.
+**Status:** homepage/detail/Page 3 refinement and isolated manager demo merged in PR #1; post-merge tests and 360/390 px captures passed on the verified main snapshot. Owner approval remains pending before Phase 3. The public preview authentication behavior and moderate development-dependency audit findings remain documented in `PHASE2_REPORT.md`.
 
 **Entry:** Q-01/Q-02/Q-03 sufficiently resolved; screenshots available for meaningful visual sign-off. If not, the owner may approve only nonvisual tooling setup, not final UI fidelity.
 

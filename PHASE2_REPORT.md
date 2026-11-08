@@ -1,10 +1,56 @@
-# AZmovies — Final Phase 2 Prototype Report
+# AZmovies — Phase 2 Prototype and Post-Merge Verification Report
 
-- **Status:** Final local refinement complete; **owner approval is pending**.
-- **Branch:** `arena/9177d6f3-azmovies` · No GitHub push.
-- **Evidence timestamp:** sandbox clock 2026-11-08; test logs and captures are under ignored `.artifacts/phase2/`.
+- **Status:** PR #1 merged into `main`; post-merge verification is recorded below. **Owner approval remains required before Phase 3.**
+- **Merge commit:** `72f3ed4a4dc47c3fc0249b8b7963b93554c25c65`.
+- **Verification branch:** `arena/252d03ee-azmovies`, initially clean and at the exact same commit and tree as GitHub `main`.
+- **Evidence:** Fresh post-merge logs and captures are under ignored `.artifacts/post-merge/`. The pre-merge observations and prior-session artifact paths below are historical; ignored artifacts do not travel with Git.
 
-## 1. Scope delivered
+## Post-merge verification
+
+### Baseline and application
+
+GitHub reports [PR #1](https://github.com/sachi26698-LIMA/AZmovies/pull/1) as **MERGED** into `main`, with merge commit `72f3ed4a4dc47c3fc0249b8b7963b93554c25c65`. The GitHub API reported the same SHA for `main` at verification time. Before any documentation changes, the fixed session branch was at that commit, `git status --porcelain --untracked-files=all` was empty, and `git diff origin/main` was empty; both refs had tree object `007c66329177902e48ed225b74ffbf114458bdf9`. The session did **not** switch to or check out `main`: its clean checkout was identical to the verified main snapshot. Subsequent documentation edits are on the session branch only and do not change remote `main`.
+
+After `npm ci` from the committed lockfile, `npm run build` generated **532** static pages. The resulting production app was started with `npm run start -- --port 3000`, listening on `0.0.0.0:3000`, and returned HTTP 200 locally. No application or UI source code was changed during this verification.
+
+### Fresh mobile screenshots and navigation
+
+Chromium captured the current main build at **360×800** and **390×844** CSS pixels, device-pixel ratio 1. The actual first-movie journey was followed at each width: homepage → `Aranya: Rise of a Legend` detail → its `480p` selection on Page 3 → the explicit Back link to the same detail page. Page 3 displayed the matching movie, quality and fixture provider; Continue was natively disabled. Both journeys passed without page errors, and each page's document width equaled the viewport width.
+
+The viewport overview is `.artifacts/post-merge/mobile-overview.png`. Individual viewport and full-page captures, respectively, are:
+
+| Page           | 360 px                                                         | 390 px                                                         |
+| -------------- | -------------------------------------------------------------- | -------------------------------------------------------------- |
+| Homepage       | `page1-home-360-viewport.png`, `page1-home-360-full.png`       | `page1-home-390-viewport.png`, `page1-home-390-full.png`       |
+| Movie detail   | `page2-detail-360-viewport.png`, `page2-detail-360-full.png`   | `page2-detail-390-viewport.png`, `page2-detail-390-full.png`   |
+| Page 3 handoff | `page3-handoff-360-viewport.png`, `page3-handoff-360-full.png` | `page3-handoff-390-viewport.png`, `page3-handoff-390-full.png` |
+
+All filenames in this table are under `.artifacts/post-merge/`. Metrics and paths are in `mobile-navigation-metrics.json`. These are fresh screenshots of the local production build, not captures of the authenticated Arena iframe. The capture-only script eagerly loaded offscreen images without changing app code. Two initial capture-harness assertions failed: a homepage card's display text included extra metadata, and a route change briefly showed a loading fallback. The script was corrected to compare the canonical title and wait for the handoff heading; the final capture and navigation run passed at both widths.
+
+### Tests and dependency observations
+
+| Post-merge command / check                                                           | Result                                                                                                                                                                                                                                                         |
+| ------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm run test`                                                                       | **52/52** unit/component tests passed across 9 files.                                                                                                                                                                                                          |
+| `npm run build` then `npx playwright test`                                           | **36/36** Chromium browser regression tests passed against the running fresh production build. The suite includes 3 axe-tagged and 19 responsive-tagged tests; these are overlapping subsets, not additional tests.                                            |
+| `npm run format:check`, `npm run lint`, `npm run typecheck`, `npm run verify:static` | Passed.                                                                                                                                                                                                                                                        |
+| `npm run verify:public-boundary`                                                     | Passed: 19 static assets and 2,660 generated HTML/RSC payloads, zero failures.                                                                                                                                                                                 |
+| `npm audit --omit=dev`                                                               | Passed: 0 reported runtime vulnerabilities at this execution.                                                                                                                                                                                                  |
+| Full `npm audit`                                                                     | **10 moderate, 0 high/critical** findings; exit 1. The underlying [minimatch advisory](https://github.com/advisories/GHSA-g3hv-75wg-m249) affects the development tooling dependency graph. No dependency updates were made in this verification; see BUG-018. |
+| `npm ci`                                                                             | Succeeded with existing ESLint peer-range override warnings; lint still passed. No lockfile changes were made.                                                                                                                                                 |
+
+Logs, JSON results and audit reports are in `.artifacts/post-merge/`. These results do not replace production security testing or testing in Firefox, WebKit or on physical devices.
+
+### Separate preview 403 investigation
+
+- The local production app returned **200** with both a normal local request and a request carrying the assigned preview `Host`/`Origin` and an iframe fetch hint. The inspected local response had no `X-Frame-Options` or CSP header. A simulated cross-origin iframe on a different local port loaded the homepage and visible search; it is **not** the real Arena iframe.
+- The separate web fetch tool, without credentials, received E2B **403 “Missing traffic access token”** for the public preview root, movie detail and Page 3. A direct in-sandbox `curl` to the public hostname failed during TLS setup with exit 35 and HTTP 000, so it did not establish public access from inside the sandbox.
+- [E2B's private-sandbox documentation](https://docs.e2b.dev/network/restrict-public-access) states that requests to a private sandbox without its traffic access token receive 403. The observed public response is consistent with that documented gateway policy, not evidence of an app route failure. The session cannot inspect the actual Arena iframe request, authentication propagation or proxy logs, so authenticated preview behavior and any fix remain **unverified**.
+- No token was requested, logged or embedded, and no network, authentication, proxy or UI restrictions were relaxed. If an authenticated Arena preview fails, platform owners should investigate the authorized proxy-to-sandbox credential flow; do not make the sandbox public as a workaround. See BUG-014.
+
+**Gate:** Wait for explicit owner approval before Phase 3. The merge and these checks do not constitute production readiness or approval to activate external destinations.
+
+## 1. Scope delivered (pre-merge implementation)
 
 - **Page 1:** Refined the MOVIES4U-inspired category sizing, color, spacing and poster proportions without changing the existing structure. Search, category filtering, pagination, drawer, footer and the two-column grid remain fixture-based.
 - **Page 2:** Refined reference-derived title, metadata, quality rows and spacing; the three synthetic screenshot images form a continuous vertical stack. Audio labels distinguish single-, dual- and multi-language fixtures; they are not claims of real availability.

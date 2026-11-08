@@ -2,7 +2,15 @@
 
 All notable completed project changes are recorded here. This is a phase-controlled project, not a claim of released software versions. Dates use YYYY-MM-DD.
 
-## [Unreleased] — Final Phase 2 refinement (sandbox clock 2026-11-08)
+## [Unreleased] — Post-merge Phase 2 verification (sandbox clock 2026-11-08)
+
+- Confirmed PR #1 merged into `main` at `72f3ed4`; the clean session checkout initially matched the same commit and tree.
+- Rebuilt and started the merged prototype; 52/52 unit/component and 36/36 Chromium browser tests passed. Captured all three pages and verified the navigation journey at 360 and 390 px.
+- Checked the separate preview 403 against local Host/iframe probes and E2B documentation without changing UI or authentication. The actual authenticated Arena iframe remains unverified.
+- Runtime dependency audit reported 0 findings; the full audit reported 10 moderate development-tooling findings, tracked as BUG-018. No dependency fix or Phase 3 work was performed.
+- Updated `PHASE2_REPORT.md` and the project context, test and bug records. Owner approval before Phase 3 remains pending.
+
+## [Unreleased] — Final Phase 2 refinement (sandbox clock 2026-11-08, pre-merge)
 
 - Matched homepage category geometry and poster proportions more closely to the supplied MOVIES4U reference; refined detail typography, metadata, option rows and continuous screenshot stack.
 - Replaced public internal-ID paths with descriptive movie/option selectors. Moved 480 synthetic records and their destination URLs behind Next's `server-only` boundary; Page 3 receives only a safe summary and Continue is natively disabled.
