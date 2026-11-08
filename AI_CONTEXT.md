@@ -1,6 +1,6 @@
 # AZmovies — AI Context
 
-**Checkpoint:** 2026-11-07 · Phase 2 homepage + movie-detail static fixture prototype delivered locally · **Awaiting owner visual approval before Phase 3**
+**Checkpoint:** 2026-11-08 · Phase 2 homepage + movie detail + Page 3 intermediate link page delivered locally · **Awaiting owner approval before the persistence/admin phase**
 
 This is the concise project memory. Read `AGENTS.md` before acting. Plans below are not claims of implemented functionality.
 
@@ -12,25 +12,25 @@ The owner has explicitly prohibited unnecessary redesign and premature implement
 
 ## 2. Verified repository and tooling snapshot
 
-| Item                     | Actual observation on 2026-11-07                                                                                                                                                          |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Checkout                 | `/home/user/AZmovies`                                                                                                                                                                     |
-| Session branch           | `arena/9177d6f3-azmovies`                                                                                                                                                                 |
-| Starting commit          | `662694163ddf11337fa5a7cceea83bacdd4472d8` (`Initial commit`)                                                                                                                             |
-| Foundation commit        | `13ad936a25e236985068fa5d422f64aafdb04afa` — local only; a follow-up checkpoint records validation evidence                                                                               |
-| Starting tracked content | `README.md` only, containing `# AZmovies`; inspected before expansion                                                                                                                     |
-| Starting worktree        | Clean                                                                                                                                                                                     |
-| Remote                   | `https://github.com/sachi26698-LIMA/AZmovies.git`                                                                                                                                         |
-| GitHub CLI               | 2.23.0; authenticated as `sachi26698-LIMA` through an existing environment token, never printed                                                                                           |
-| GitHub API               | Read-only repository request succeeded; public, unarchived, default branch `main`; API reported push/admin permissions                                                                    |
-| GitHub writes            | No push, PR, merge or remote configuration change performed                                                                                                                               |
-| Git                      | 2.39.5; local commit identity configured                                                                                                                                                  |
-| OS/resources             | Linux x86_64; 2 CPUs; approximately 3.8 GiB RAM; approximately 20 GiB free disk at inspection                                                                                             |
-| Node/npm                 | Node 22.22.3 / npm 10.9.8; npm registry metadata reads succeeded                                                                                                                          |
-| Other runtimes           | Python 3.11.2; Yarn 1.22.22; pnpm/Bun absent                                                                                                                                              |
-| Database/browser tools   | No `psql`, `sqlite3`, Docker, Chromium, Chrome or Firefox executable found                                                                                                                |
-| Visual references        | Fifteen owner-supplied JPEGs inspected and mapped: six homepage files (two primary MOVIES4U, four HDHub4u) and nine detail files (eight crops + one full page); raw images ignored by Git |
-| Application              | Phase 2 Next.js static fixture prototype implemented, including homepage and movie detail page; no live API/database/auth/redirect; local Phase 2 checkpoints on session branch; no push  |
+| Item                     | Actual observation on 2026-11-07                                                                                                                                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Checkout                 | `/home/user/AZmovies`                                                                                                                                                                                                              |
+| Session branch           | `arena/9177d6f3-azmovies`                                                                                                                                                                                                          |
+| Starting commit          | `662694163ddf11337fa5a7cceea83bacdd4472d8` (`Initial commit`)                                                                                                                                                                      |
+| Foundation commit        | `13ad936a25e236985068fa5d422f64aafdb04afa` — local only; a follow-up checkpoint records validation evidence                                                                                                                        |
+| Starting tracked content | `README.md` only, containing `# AZmovies`; inspected before expansion                                                                                                                                                              |
+| Starting worktree        | Clean                                                                                                                                                                                                                              |
+| Remote                   | `https://github.com/sachi26698-LIMA/AZmovies.git`                                                                                                                                                                                  |
+| GitHub CLI               | 2.23.0; authenticated as `sachi26698-LIMA` through an existing environment token, never printed                                                                                                                                    |
+| GitHub API               | Read-only repository request succeeded; public, unarchived, default branch `main`; API reported push/admin permissions                                                                                                             |
+| GitHub writes            | No push, PR, merge or remote configuration change performed                                                                                                                                                                        |
+| Git                      | 2.39.5; local commit identity configured                                                                                                                                                                                           |
+| OS/resources             | Linux x86_64; 2 CPUs; approximately 3.8 GiB RAM; approximately 20 GiB free disk at inspection                                                                                                                                      |
+| Node/npm                 | Node 22.22.3 / npm 10.9.8; npm registry metadata reads succeeded                                                                                                                                                                   |
+| Other runtimes           | Python 3.11.2; Yarn 1.22.22; pnpm/Bun absent                                                                                                                                                                                       |
+| Database/browser tools   | No `psql`, `sqlite3`, Docker, Chromium, Chrome or Firefox executable found                                                                                                                                                         |
+| Visual references        | Fifteen owner-supplied JPEGs inspected and mapped: six homepage files (two primary MOVIES4U, four HDHub4u) and nine detail files (eight crops + one full page); raw images ignored by Git                                          |
+| Application              | Fixture prototype implemented: homepage, movie detail, Page 3 `/go/{linkId}/`, locked Continue endpoint `/r/{linkId}/` and prototype link manager `/admin/links/`; no database/auth/real redirect; local checkpoints only, no push |
 
 The GitHub CLI rejected the newer `--active` flag; plain `gh auth status` succeeded. This is a CLI-version limitation, not an authentication failure.
 
@@ -75,18 +75,18 @@ The FAQ separately describes free noncommercial use and attribution/branding req
 
 ## 6. Outstanding questions / blockers
 
-| ID   | Question / missing input                                                                                                                                       | Blocks                                                                              | Default until answered                                                                  |
-| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| Q-01 | Homepage and detail references received and inspected; optional missing third MOVIES4U capture remains BLK-011; detail four-vs-nine count mismatch is BLK-012. | Owner visual approval of executed homepage/detail comparisons                       | Proceed with documented references and disclosed deviations                             |
-| Q-02 | Approve the proposed stack and Phase 2 scope?                                                                                                                  | All website scaffolding                                                             | No implementation                                                                       |
-| Q-03 | Is two columns intended on desktop as well as mobile?                                                                                                          | Final grid breakpoints                                                              | Plan two columns, not an invented five-column redesign                                  |
-| Q-04 | Which external providers/pages are authorized, and what evidence supports each link?                                                                           | Publishable redirects/production content                                            | No live external movie links                                                            |
-| Q-05 | Will the site monetize, and is an appropriate TMDB agreement available?                                                                                        | Live TMDB integration                                                               | Manual-first; provider disabled                                                         |
-| Q-06 | Which hosting platform, domain and PostgreSQL provider will be used?                                                                                           | Deployment-specific cookies, proxy trust, cron, browser CI and database integration | Local/preview configuration only after approval                                         |
-| Q-07 | What is the official Telegram destination?                                                                                                                     | Floating link activation                                                            | Hide unconfigured link rather than invent a channel                                     |
-| Q-08 | Which languages, category labels and quality vocabulary should be used?                                                                                        | Reference/content acceptance                                                        | Editable taxonomy; unknown quality is explicit, never fabricated                        |
-| Q-09 | Who owns admin recovery, and is authenticator-based MFA acceptable?                                                                                            | Production admin rollout                                                            | Single admin; no public signup or unverified email recovery                             |
-| Q-10 | Expected catalog size/import cadence and poster rights/source?                                                                                                 | Capacity, storage and import scheduling                                             | Initial performance fixture target: 10,000 movies; no bulk copyrighted assets committed |
+| ID   | Question / missing input                                                                                                                                       | Blocks                                                                              | Default until answered                                                                                      |
+| ---- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Q-01 | Homepage and detail references received and inspected; optional missing third MOVIES4U capture remains BLK-011; detail four-vs-nine count mismatch is BLK-012. | Owner visual approval of executed homepage/detail comparisons                       | Proceed with documented references and disclosed deviations                                                 |
+| Q-02 | Approve the proposed stack and Phase 2 scope?                                                                                                                  | All website scaffolding                                                             | No implementation                                                                                           |
+| Q-03 | Is two columns intended on desktop as well as mobile?                                                                                                          | Final grid breakpoints                                                              | Plan two columns, not an invented five-column redesign                                                      |
+| Q-04 | Which external providers/pages are authorized, and what evidence supports each link?                                                                           | Activating Continue on Page 3; publishable redirects/production content             | `EXTERNAL_ACTIVATION_ENABLED = false` and every fixture link is `fixture-placeholder`; Continue stays inert |
+| Q-05 | Will the site monetize, and is an appropriate TMDB agreement available?                                                                                        | Live TMDB integration                                                               | Manual-first; provider disabled                                                                             |
+| Q-06 | Which hosting platform, domain and PostgreSQL provider will be used?                                                                                           | Deployment-specific cookies, proxy trust, cron, browser CI and database integration | Local/preview configuration only after approval                                                             |
+| Q-07 | What is the official Telegram destination?                                                                                                                     | Floating link activation                                                            | Hide unconfigured link rather than invent a channel                                                         |
+| Q-08 | Which languages, category labels and quality vocabulary should be used?                                                                                        | Reference/content acceptance                                                        | Editable taxonomy; unknown quality is explicit, never fabricated                                            |
+| Q-09 | Who owns admin recovery, and is authenticator-based MFA acceptable?                                                                                            | Production admin rollout                                                            | Single admin; no public signup or unverified email recovery                                                 |
+| Q-10 | Expected catalog size/import cadence and poster rights/source?                                                                                                 | Capacity, storage and import scheduling                                             | Initial performance fixture target: 10,000 movies; no bulk copyrighted assets committed                     |
 
 ## 7. Current evidence and next action
 
@@ -94,4 +94,19 @@ Phase 2 application checks executed on 2026-11-07 after the movie-detail additio
 
 Browser execution was resolved through `@sparticuz/chromium` with bundled AL2023 library extraction and omission of the unstable `--single-process` flag in this sandbox. Firefox/WebKit, real devices, screen-reader smoke, Lighthouse/Core Web Vitals, database/auth/API/live-metadata and production security checks remain **Not run**. Owner visual approval remains **pending**.
 
-Next action: present `PHASE2_REPORT.md`, the live preview and the aligned homepage/detail comparison artifacts, then wait for explicit owner approval before Phase 3. Do not start persistence/admin/auth merely because the prototype builds. Detail provider/watch/trailer controls remain authorized-link placeholders until the owner supplies approved URLs.
+### Page 3 increment (2026-11-08)
+
+Executed after adding the intermediate link page: `npm run format:check`, `npm run typecheck`,
+`npm run lint`, `npm run verify:static` (34 source files) passed; `npm run test` **52/52** Vitest;
+`npm run build` **532 static pages**; `npx playwright test` **30/30** Chromium; `npm run
+capture:prototype` executed; runtime `npm audit --omit=dev` **0**. Page 3 evidence lives in
+`.artifacts/phase2/prototype-360-link-*.png`, `prototype-360-admin-links*.png` and
+`prototype-metrics.json` (`link360`, `admin360`). Details: `PAGE3_REPORT.md`.
+
+Two independent locks keep external navigation off: `EXTERNAL_ACTIVATION_ENABLED = false` and
+per-link `authorization: 'fixture-placeholder'`. The link manager is a **sessionStorage prototype
+with no auth, no server write and no database**; it is not the real admin.
+
+Next action: wait for owner approval of Page 3 (and the still-pending homepage/detail approval).
+Do not start persistence/authenticated admin merely because the prototype builds. Do not activate
+real destinations until the owner supplies authorized URLs and per-link evidence.

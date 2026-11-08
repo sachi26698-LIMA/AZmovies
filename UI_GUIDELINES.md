@@ -77,6 +77,25 @@ Geometry estimates at 360 CSS px: header about 52 px, search height 36 px and ho
 
 Font: system sans-serif stack is used because the original font was not supplied/licensed. Poster ratio is 2:3. Touch targets are kept usable; compact category pills follow the reference density.
 
+### Page 3 — intermediate link page (no reference supplied)
+
+None of the 15 owner captures shows an intermediate handoff screen, so Page 3 derives its styling
+from the approved detail-page tokens rather than inventing a new visual language. This derivation is
+a disclosed deviation, not a matched reference.
+
+| Element      | Treatment                                                                                             |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| Shell        | Shared `Header`, `SideDrawer`, `Footer`, `TelegramFloating`; black `#000000` page                     |
+| Panels       | `#141414` rounded panels, blue `#0084eb` definition terms, `#c3c3c3` values, `#373737` rules          |
+| Continue     | Full-width primary blue button, 56 px high at 360 px, chevron affordance (never a play/download icon) |
+| Locked state | `aria-disabled` plus a visible explanation; the stored URL is plain text, never an anchor             |
+| Back         | Gray chip matching the detail page's "Go to HomePage" chip, labelled "Back to Movie Details"          |
+| Warning      | `#ff6b6b` lead-in on the prototype-mode notice                                                        |
+| Link manager | Same panels/chips; white "Enabled" and red "Disabled" badges; per-row action buttons                  |
+
+Never add a countdown, auto-redirect, interstitial ad, fake "Download now" button or pop-up to this
+screen. The handoff must stay a single explicit user action.
+
 ## 4. Layout and responsive procedure
 
 - Semantic `header`, `nav`, `main`, `footer`; one page-level `h1` and a grid `h2` are visually hidden where the reference has no visible heading.

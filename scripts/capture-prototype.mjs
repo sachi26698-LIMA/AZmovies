@@ -108,7 +108,83 @@ const detailMetrics = await page360.evaluate(() => {
     externalLinks: document.querySelectorAll('a[href^="http"]').length,
   };
 });
+// Page 3: read the disabled option id from the detail page, then follow the real
+// journey into the intermediate link page instead of deep-linking to a guessed id.
+const disabledLinkId = await page360
+  .locator('ul[aria-label="Quality option placeholders"] button[aria-disabled="true"]')
+  .first()
+  .getAttribute('data-link-id');
+await page360.locator('ul[aria-label="Quality option placeholders"] a').first().click();
+await settled(page360);
+await page360.screenshot({ path: `${out}/prototype-360-link-top.png` });
+await page360.screenshot({ path: `${out}/prototype-360-link-full.png`, fullPage: true });
+const linkMetrics = await page360.evaluate(() => {
+  const button = Array.from(document.querySelectorAll('button')).find((el) =>
+    el.textContent?.includes('Continue'),
+  );
+  const rect = button?.getBoundingClientRect();
+  return {
+    url: location.pathname,
+    scrollWidth: document.documentElement.scrollWidth,
+    storedDestination: document.querySelector('[data-testid="stored-destination"]')?.textContent,
+    continueAriaDisabled: button?.getAttribute('aria-disabled') ?? null,
+    continueRect: rect ? { width: Math.round(rect.width), height: Math.round(rect.height) } : null,
+    externalLinks: document.querySelectorAll('a[href^="http"]').length,
+    metaRefresh: document.querySelectorAll('meta[http-equiv="refresh"]').length,
+  };
+});
+// The Continue control is aria-disabled but explains itself on click; force the
+// pointer action so the captured state shows the real denial message.
+await page360.getByRole('button', { name: /continue/i }).click({ force: true });
+await settled(page360);
+await page360.screenshot({ path: `${out}/prototype-360-link-continue-denied.png` });
+if (disabledLinkId) {
+  await page360.goto(`${baseURL}/go/${disabledLinkId}/`);
+  await settled(page360);
+  await page360.screenshot({ path: `${out}/prototype-360-link-disabled.png`, fullPage: true });
+}
+await page360.goto(`${baseURL}/admin/links/`);
+await settled(page360);
+await page360.screenshot({ path: `${out}/prototype-360-admin-links-top.png` });
+const adminMetrics = await page360.evaluate(() => ({
+  url: location.pathname,
+  scrollWidth: document.documentElement.scrollWidth,
+  configurableLinks: document.querySelectorAll('[aria-label="Provider links"] > ul > li').length,
+  headings: document.querySelectorAll('h1').length,
+  documentHeight: document.documentElement.scrollHeight,
+}));
 await context360.close();
+
+// The link manager is ~3900 CSS px tall; at DPR 3 the stitched full-page image
+// repeats a segment in this headless shell, so capture the long page at DPR 1.
+const contextAdmin = await browser.newContext({
+  viewport: { width: 360, height: 722 },
+  deviceScaleFactor: 1,
+  reducedMotion: 'reduce',
+});
+const pageAdmin = await contextAdmin.newPage();
+await pageAdmin.goto(`${baseURL}/admin/links/`);
+await settled(pageAdmin);
+await pageAdmin.screenshot({ path: `${out}/prototype-360-admin-links.png`, fullPage: true });
+await contextAdmin.close();
+
+const linkCaptures = [];
+for (const width of [768, 1440]) {
+  const context = await browser.newContext({
+    viewport: { width, height: 1024 },
+    deviceScaleFactor: 1,
+    reducedMotion: 'reduce',
+  });
+  const page = await context.newPage();
+  await page.goto(`${baseURL}/go/lnk-0001/`);
+  await settled(page);
+  await page.screenshot({ path: `${out}/prototype-${width}-link-full.png`, fullPage: true });
+  linkCaptures.push({
+    width,
+    scrollWidth: await page.evaluate(() => document.documentElement.scrollWidth),
+  });
+  await context.close();
+}
 
 const captures = [];
 for (const [name, width, height, dpr] of [
@@ -136,6 +212,10 @@ const report = {
   browser: 'Chromium via @sparticuz/chromium',
   primary360: metrics360,
   detail360: detailMetrics,
+  link360: linkMetrics,
+  admin360: adminMetrics,
+  disabledLinkId,
+  linkCaptures,
   captures,
 };
 writeFileSync(`${out}/prototype-metrics.json`, JSON.stringify(report, null, 2));

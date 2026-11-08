@@ -2,6 +2,42 @@
 
 All notable completed project changes are recorded here. This is a phase-controlled project, not a claim of released software versions. Dates use YYYY-MM-DD.
 
+## [Unreleased] — 2026-11-08 — Page 3 intermediate external link page
+
+### Added
+
+- `/go/{linkId}/` intermediate handoff page showing movie title, selected quality, provider name, link status, link reference and the exact stored destination, with a prominent Continue button and Back to Movie Details.
+- 480 stored provider-link fixtures (48 movies × 10 options), each with its own opaque id and its own unique destination on IANA-reserved example hosts.
+- `/r/{linkId}/` Continue endpoint: fresh server-side policy check, 303 to the exact stored URL only when every gate passes, otherwise 404/410/403 with no `Location` header and `no-store`/`no-referrer`/`noindex`/`nosniff`.
+- Shared default-deny destination policy (exact HTTPS host allowlist, no userinfo, default port only, bounded length, control-character and encoded-traversal rejection) used by the admin form, Page 3 and the endpoint.
+- `/admin/links/` prototype link manager: add, edit, disable, enable, delete and reset individual links, with shared URL validation and per-link independence.
+- Page 3 unit/component/browser tests (mapping, invalid URLs, disabled/unknown links, query-injection resistance, navigation, admin CRUD, axe, responsive) and Page 3 screenshot capture.
+- `PAGE3_REPORT.md` evidence and approval report.
+
+### Changed
+
+- Detail-page quality/watch/provider rows now open their own Page 3 instead of being dead placeholders. Detail and homepage layout, typography and colors are unchanged.
+- `trailingSlash: true` so the already-used `/…/` hrefs are canonical and `/r/{id}/` answers directly instead of redirecting first.
+- Continue uses a chevron affordance rather than a play icon, and the shared header search control opens the drawer on pages without their own search field.
+- Test totals: 52 Vitest, 30 Chromium, 532 static pages.
+
+### Verified on 2026-11-08
+
+- `npm run format:check`, `npm run typecheck`, `npm run lint`, `npm run verify:static`: passed.
+- `npm run test`: 52 passed. `npm run build`: 532 static pages. `npx playwright test`: 30 passed.
+- `npm run capture:prototype`: executed. `npm audit --omit=dev`: 0 reported runtime vulnerabilities.
+- No GitHub push performed.
+
+### Not added / still locked
+
+- No real external destination is activated: `EXTERNAL_ACTIVATION_ENABLED = false` and every fixture link is `fixture-placeholder`.
+- The link manager has no authentication, no server write, no database and no audit history; overrides live in the tab session only.
+- No countdown, auto-redirect, pop-up, click counting or provider availability checker.
+
+### Next gate
+
+Owner approval of Page 3 plus authorized provider URLs and per-link evidence before any real handoff is enabled.
+
 ## [Unreleased] — 2026-11-07 — Phase 2 movie detail page
 
 ### Added

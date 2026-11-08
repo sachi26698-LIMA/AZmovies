@@ -38,10 +38,28 @@
 - [x] Update context/architecture/UI/tests/changelog/bug tracker and create local Phase 2 commits `3f0120d`, `f1edf53` and detail checkpoint `39f1262`; no push.
 - [ ] Obtain owner approval of the prototype, contrast/safety deviations and remaining empty category states before Phase 3.
 
+## Phase 2 increment — Page 3 intermediate external link page
+
+- [x] Review the existing Phase 2 homepage/detail work before changing anything.
+- [x] Give every quality/watch/provider option its own stored link record with a unique id and unique destination (480 records).
+- [x] Wire detail option rows to their own `/go/{linkId}/` intermediate page without redesigning the detail page.
+- [x] Build Page 3 showing movie title, selected quality, provider name, status, link reference and stored destination.
+- [x] Add a prominent, user-initiated Continue control and a Back to Movie Details option.
+- [x] Implement the exact-destination Continue endpoint `/r/{linkId}/` with default-deny status semantics.
+- [x] Implement shared destination validation: approved exact HTTPS hosts only, no userinfo/odd ports/unsafe paths.
+- [x] Prove open-redirect resistance: opaque id only; query/header/body targets ignored on `/go/` and `/r/`.
+- [x] Keep activation off with two independent locks (global constant + per-link fixture authorization).
+- [x] Build the prototype per-link manager with add/edit/disable/enable/delete and reset, each link independent.
+- [x] Execute 52 Vitest and 30 Chromium tests, including mapping, invalid URLs, disabled links and navigation.
+- [x] Capture Page 3, denial, disabled, link-manager and tablet/desktop screenshots.
+- [x] Update AI Brain, architecture, API, schema, security, UI, testing and task records.
+- [ ] Obtain owner approval of Page 3 and its disclosed deviations.
+- [ ] Receive authorized provider URLs plus per-link evidence before any real destination is activated.
+
 ## Immediate owner inputs
 
 1. Approve or request changes to the Phase 2 homepage and movie-detail visual match using `.artifacts/phase2/comparison-primary-top.png`, `.artifacts/phase2/comparison-detail-top.png` and the live preview.
-2. Accept or amend the documented safety/accessibility deviations: AZmovies branding, synthetic posters, inert Telegram/app/footer controls, “How To Watch?” wording and darkened AA pill colors.
+2. Accept or amend the documented safety/accessibility deviations: AZmovies branding, synthetic posters, inert Telegram/app/footer controls, “How To Watch?” wording, darkened AA pill colors, and the Page 3 items in `PAGE3_REPORT.md` §8 (derived styling, inert Continue, unauthenticated prototype link manager).
 3. Optionally supply the missing third MOVIES4U screenshot; the received primary MOVIES4U set contains two files, not three.
 4. Before Phase 3: provision approved PostgreSQL, confirm admin owner/MFA/recovery custody and confirm authorized destination/content policy.
 5. Before Phase 4/5: supply official Telegram URL, authorized external-link inventory (including detail quality/watch provider URLs) and metadata permission/provider decision.

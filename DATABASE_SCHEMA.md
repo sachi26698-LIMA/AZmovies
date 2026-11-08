@@ -142,6 +142,16 @@ Only HTTPS and standard port 443 are accepted by application policy. No userinfo
 
 Approved-link check constraints require evidence and approval metadata. Any material target change returns the link to pending and clears approval; approval cannot be mass-assigned through a movie update. Revoked/expired links and inactive destinations fail at click time. Follow no caller-supplied redirect target.
 
+**Page 3 fixture mapping (2026-11-08, no database yet).** `ProviderLinkFixture` in
+`src/lib/link-fixtures.ts` is the shape this table must absorb: `id` → opaque public id,
+`movieSlug` → `movie_id`, `targetUrl` → `target_url` + `destination_id`, `providerName`/`label` →
+label/provider columns, `status: enabled|disabled` → link lifecycle (the persisted model still needs
+`pending`/`revoked`). There is deliberately no fixture field for `authorization_evidence` or
+`approved_by`/`approved_at`: every record is `authorization: 'fixture-placeholder'`, which is why
+Continue cannot fire. The prototype's `sessionStorage` override store is **not** a schema substitute:
+it has no uniqueness constraints, no audit trail and no multi-user semantics. Add a uniqueness
+constraint on the public link id and keep per-link independence when migrating.
+
 ### `redirect_daily_counts`
 
 - link_id FK + UTC day composite PK; integer count nonnegative.

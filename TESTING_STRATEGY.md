@@ -50,9 +50,9 @@ npm run format:check      # pass
 npm run typecheck         # pass
 npm run lint              # pass
 npm run verify:static     # pass; static fixture boundary report
-npm run test              # pass; 16 Vitest unit/component tests
-npm run build             # pass; 51 static pages
-npx playwright test       # pass; 15 Chromium functional/a11y/responsive tests
+npm run test              # pass; 52 Vitest unit/component tests (incl. Page 3 policy/store/fixtures)
+npm run build             # pass; 532 static pages (480 Page 3 + 48 detail + home/admin/not-found)
+npx playwright test       # pass; 30 Chromium functional/a11y/responsive tests (incl. Page 3 + link manager)
 npm run test:a11y         # available subset of Playwright @a11y tests
 npm run test:responsive   # available subset of Playwright @responsive tests
 npm run analyze:references # executed; reference samples/crops
@@ -61,6 +61,13 @@ npm run compare:visual     # executed; aligned primary-top comparison
 ```
 
 Playwright and capture use `@sparticuz/chromium`; the sandbox requires bundled AL2023 NSS/NSPR library extraction and omission of `--single-process`. The default target is `http://127.0.0.1:3000`; override with `PROTOTYPE_URL`. Coverage, Lighthouse, cross-browser engines, real-device, screen-reader, database/API/auth and live-provider commands remain future work and are not claimed.
+
+Page 3 adds three mandatory scenario groups, all executed on 2026-11-08: destination mapping (each
+link id resolves to its own stored URL, across providers and movies), rejection (invalid/unsafe/
+non-approved URLs, disabled links, unknown ids, injected query targets), and navigation
+(homepage→detail→option→Page 3→back, plus admin changes reflected on the public page). Activation-on
+behaviour is covered by unit tests of `resolveContinue` only; no test navigates to a real external
+host, because none is authorized.
 
 ## 5. Continuous integration plan
 

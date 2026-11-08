@@ -41,6 +41,16 @@ npm run compare:visual
 
 The Playwright/capture scripts use `@sparticuz/chromium` and expect the prototype at `http://127.0.0.1:3000` unless `PROTOTYPE_URL` is set. Reference JPEGs are internal-only and ignored by Git; place owner-supplied files in `docs/references/` before running reference analysis.
 
+## Pages in the prototype
+
+| Route             | Page                                                                   |
+| ----------------- | ---------------------------------------------------------------------- |
+| `/`               | Homepage catalog (approved reference match)                            |
+| `/movies/{slug}/` | Movie detail                                                           |
+| `/go/{linkId}/`   | Page 3 intermediate authorized-provider handoff                        |
+| `/r/{linkId}/`    | Continue endpoint; default deny while owner activation is off          |
+| `/admin/links/`   | Prototype per-link manager (fixture/session only, no auth or database) |
+
 ## Verified Phase 2 evidence
 
 Executed on 2026-11-07 in the sandbox:
@@ -49,6 +59,9 @@ Executed on 2026-11-07 in the sandbox:
 - Vitest: 16 unit/component tests passed.
 - Next.js production build passed; 51 static pages generated.
 - Playwright Chromium: 15 functional/accessibility/responsive tests passed.
+
+Re-executed on 2026-11-08 after Page 3 was added: checks passed; Vitest **52** tests; build **532** static pages; Playwright Chromium **30** tests; runtime audit 0. See [PAGE3_REPORT.md](PAGE3_REPORT.md).
+
 - Prototype captures and aligned primary-top comparison written to `.artifacts/phase2/`.
 - Runtime `npm audit --omit=dev`: 0 reported vulnerabilities at execution time.
 
@@ -92,4 +105,4 @@ Next.js App Router, React and strict TypeScript; hand-authored CSS Modules; Post
 
 ## Next action
 
-Owner review is requested for the Phase 2 prototype, the aligned comparison artifact and the documented safety/accessibility deviations. After explicit approval, Phase 3 may begin with approved PostgreSQL, private admin and authentication. Do not begin Phase 3 merely because this README exists.
+Owner review is requested for the homepage/detail prototype and for Page 3 (`PAGE3_REPORT.md`), including the disclosed deviations. Continue stays inert until authorized provider URLs and per-link evidence are supplied. After explicit approval, the persistence phase may begin with approved PostgreSQL, private admin and authentication. Do not begin it merely because this README exists.

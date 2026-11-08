@@ -154,6 +154,13 @@ Measured detail metrics at 360 CSS px / DPR 3: document `scrollWidth` 360; galle
 4. Red/date-chip colors are minimally adjusted for AA contrast; icons are inline SVG because reference emoji/icon assets were not supplied.
 5. Shared AZmovies header/footer replace HDHub4u branding.
 
-## 8. Approval request
+## 8. Page 3 superset
+
+The intermediate external link page (Page 3) was added on 2026-11-08 and is reported separately in
+[PAGE3_REPORT.md](PAGE3_REPORT.md). It preserves this report's homepage/detail geometry and adds
+`/go/{linkId}/`, a locked `/r/{linkId}/` Continue endpoint and a prototype link manager. Test totals
+supersede §4 of this report: 52 Vitest, 30 Chromium, 532 static pages.
+
+## 9. Approval request
 
 Review the live preview, `.artifacts/phase2/comparison-primary-top.png` and `.artifacts/phase2/comparison-detail-top.png`. Approve Phase 2 homepage and movie-detail work as-is, request specific visual changes, or approve the listed deviations before Phase 3 begins. The agent will stop here and wait for that decision.

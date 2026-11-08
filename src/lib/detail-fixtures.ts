@@ -1,10 +1,13 @@
 import { getMovie, MOVIES, type MovieFixture } from '@/lib/fixtures';
+import { getLinksForMovie, type ProviderLinkFixture } from '@/lib/link-fixtures';
 
 export interface LinkPlaceholder {
   id: string;
   label: string;
   href: string | null;
   note: string;
+  /** Opaque Page 3 intermediate-link id. Null for non-link placeholders (trailer). */
+  linkId: string | null;
 }
 
 export interface ScreenshotFixture {
@@ -60,7 +63,21 @@ const directorByPoster: Record<MovieFixture['poster'], string> = {
 };
 
 function placeholder(id: string, label: string, note: string): LinkPlaceholder {
-  return { id, label, href: null, note };
+  return { id, label, href: null, note, linkId: null };
+}
+
+/**
+ * Detail option lists keep their approved labels/notes; each option now also carries
+ * the opaque id of its own intermediate link page. No external href is ever set here.
+ */
+function optionPlaceholder(link: ProviderLinkFixture): LinkPlaceholder {
+  return {
+    id: link.optionKey,
+    label: link.label,
+    href: null,
+    note: link.note,
+    linkId: link.id,
+  };
 }
 
 export function getMovieDetail(slug: string): MovieDetailFixture | undefined {
@@ -80,36 +97,23 @@ export function getMovieDetail(slug: string): MovieDetailFixture | undefined {
   const genres = genreByPoster[movie.poster];
   const rating = (7.2 + (index % 9) * 0.1).toFixed(1);
 
-  const qualityOptions = [
-    placeholder('q-480', '480p ⚡ [placeholder]', 'Authorized source not configured'),
-    placeholder('q-720-hevc', '720p 10Bit HEVC [placeholder]', 'Authorized source not configured'),
-    placeholder('q-720-x264', '720p x264 [placeholder]', 'Authorized source not configured'),
-    placeholder(
-      'q-1080-hevc',
-      '1080p 10Bit HEVC [placeholder]',
-      'Authorized source not configured',
-    ),
-    placeholder('q-1080-x264', '1080p x264 [placeholder]', 'Authorized source not configured'),
-    placeholder('q-hq-1080', 'HQ 1080p [placeholder]', 'Authorized source not configured'),
-  ];
+  const movieLinks = getLinksForMovie(movie.slug);
+  const optionsFor = (keys: string[]) =>
+    keys
+      .map((key) => movieLinks.find((link) => link.optionKey === key))
+      .filter((link): link is ProviderLinkFixture => Boolean(link))
+      .map(optionPlaceholder);
 
-  const watchOptions = [
-    placeholder('watch-online', 'WATCH ONLINE', 'Authorized watch provider not configured'),
-    placeholder('watch-4k', '4K | AVC | DV | HEVC', 'Authorized 4K provider not configured'),
-  ];
-
-  const providerLinks = [
-    placeholder(
-      'provider-a',
-      'Authorized provider A — placeholder',
-      'Direct redirection disabled until an authorized URL is approved',
-    ),
-    placeholder(
-      'provider-b',
-      'Authorized provider B — placeholder',
-      'Direct redirection disabled until an authorized URL is approved',
-    ),
-  ];
+  const qualityOptions = optionsFor([
+    'q-480',
+    'q-720-hevc',
+    'q-720-x264',
+    'q-1080-hevc',
+    'q-1080-x264',
+    'q-hq-1080',
+  ]);
+  const watchOptions = optionsFor(['watch-online', 'watch-4k']);
+  const providerLinks = optionsFor(['provider-a', 'provider-b']);
 
   const related = MOVIES.filter((item) => item.slug !== movie.slug)
     .filter((item) => item.categories.some((category) => movie.categories.includes(category)))

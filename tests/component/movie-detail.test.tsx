@@ -22,7 +22,10 @@ describe('movie detail prototype', () => {
     expect(screen.getByRole('region', { name: 'Watch options' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Related movies' })).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: /authorized provider a/i })).not.toBeInTheDocument();
+    // Page 3 flow: options now open an internal intermediate page, never an external host.
+    const providerOption = screen.getByRole('link', { name: /authorized provider a/i });
+    expect(providerOption.getAttribute('href')).toMatch(/^\/go\/lnk-\d{4}\/?$/);
+    expect(document.querySelectorAll('a[href^="http"]')).toHaveLength(0);
   });
 
   it('has no serious jsdom axe violations outside canvas-dependent visual rules', async () => {

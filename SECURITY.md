@@ -60,6 +60,22 @@ Initial implementation does not fetch arbitrary admin URLs. If a later availabil
 
 The Telegram URL is separately restricted to HTTPS and the exact `t.me` host (or an owner-approved official alternative), with a safe path. An unset value hides the control.
 
+### Implemented Page 3 controls and their limits (2026-11-08)
+
+Enforced in code and covered by tests: exact-host allowlist (no suffix/wildcard/subdomain matching);
+HTTPS only; no userinfo; default port only; no control characters/backslashes; 2048-character bound;
+raw-path rejection of `.`/`..`/`%2e`/`%2f`/`%5c`/`%25` before URL normalization; opaque id validation;
+enabled-status check; per-link authorization check; hard-coded owner activation switch set to `false`.
+`/r/{linkId}/` answers 404/410/403 with no `Location` header while locked, and sends `no-store`,
+`no-referrer`, `noindex` and `nosniff`. Neither `/go/` nor `/r/` reads a destination from query,
+headers, cookies or body. No auto-redirect, countdown, pop-up or `meta refresh` exists.
+
+**Known prototype limitation — must not ship to production as-is:** `/admin/links/` is a public,
+unauthenticated fixture editor backed by `sessionStorage`. It cannot write to a server or activate a
+destination, and it is `noindex`, but it is not access-controlled. Real admin authentication,
+server-side authorization, persistence, per-link evidence and audit logging are later-phase
+requirements (BLK-014).
+
 ## 6. Content and metadata permission
 
 - Never host, distribute, embed or link to unauthorized copyrighted movie downloads. No download counts, fake players or “download now” calls to action.

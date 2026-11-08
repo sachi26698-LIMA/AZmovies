@@ -101,6 +101,31 @@ Not a JSON API and not an arbitrary redirect parameter.
 
 The UI may open this route in a new tab with `noopener noreferrer` and an accessible indication. Telegram is a separately validated owner-configured HTTPS link, not a movie redirect record.
 
+### Implemented prototype behaviour (2026-11-08)
+
+`GET /go/{linkId}/` — Page 3 HTML screen (not JSON). Shows movie title, selected quality, option
+label, provider name, link status, link reference and the stored destination as plain text. Reads
+**only** the path id; `?url=`/`?target=` are ignored. Unknown/removed ids render a safe
+"Link not available" panel with no destination.
+
+`GET /r/{linkId}/` — implemented and locked. Status semantics currently shipped:
+
+| Condition                                           | Status | Location header        |
+| --------------------------------------------------- | ------ | ---------------------- |
+| Unknown or malformed id                             | 404    | none                   |
+| Link disabled by admin                              | 410    | none                   |
+| Destination fails policy                            | 403    | none                   |
+| Owner activation disabled (prototype default)       | 403    | none                   |
+| Link not authorized (all fixtures)                  | 403    | none                   |
+| Every check passes (not reachable in the prototype) | 303    | exact stored HTTPS URL |
+
+All responses send `Cache-Control: no-store, max-age=0`, `Referrer-Policy: no-referrer`,
+`X-Robots-Tag: noindex, nofollow`, `X-Content-Type-Options: nosniff`. Query parameters, headers,
+cookies and bodies are never read as a destination.
+
+`/admin/links/` is a **prototype UI only** — there are no admin API endpoints, no authentication and
+no persistence yet. The private admin contracts in §5 remain unimplemented.
+
 ## 4. Authentication endpoints
 
 Mounted by Better Auth under `/api/auth/*`; exact enabled paths are generated from the pinned configuration. Do not create a parallel custom login/session API.

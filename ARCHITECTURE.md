@@ -152,6 +152,24 @@ Planned interface responsibilities: search by title/provider ID, fetch details, 
 
 A domain being legitimate does not authorize every page on it. Per-link evidence remains necessary. No file-download, torrent, magnet, embedded player or shortener destination is allowed.
 
+### Implemented prototype subset (Page 3, 2026-11-08)
+
+| Module                         | Responsibility                                                                                   |
+| ------------------------------ | ------------------------------------------------------------------------------------------------ |
+| `src/lib/link-fixtures.ts`     | 480 stored link records (48 movies × 10 options); unique opaque id and unique target per link    |
+| `src/lib/link-policy.ts`       | Pure default-deny destination validation and `resolveContinue` decision; no request input        |
+| `src/lib/redirect-config.ts`   | Hard-coded owner activation switch, currently `false`                                            |
+| `src/lib/link-store.ts`        | Browser-session fixture overrides for the prototype manager (`sessionStorage`); not a data layer |
+| `src/app/go/[linkId]/page.tsx` | Page 3 intermediate screen; SSG for fixture ids, on-demand for session-added ids                 |
+| `src/app/r/[linkId]/route.ts`  | Dynamic Continue endpoint; fresh policy check, 303 only when every gate passes                   |
+| `src/components/links/`        | `IntermediateLinkPrototype`, `LinkManagerPrototype`                                              |
+
+Data flow: the detail option carries only a `linkId` → Page 3 looks the record up by id → Continue
+navigates to `/r/{linkId}/` → the route re-resolves the stored record server-side. The destination
+never travels through the client, the URL query string or a request body. Replacing `link-store.ts`
+with authenticated, persisted Drizzle queries is the persistence-phase boundary; the policy module
+and route contract are intended to survive that change unchanged.
+
 ## 10. Configuration, deployment and operations
 
 - Validate configuration at server startup. `BETTER_AUTH_URL` is the canonical origin; extra trusted origins are explicit, including the exact assigned Arena preview origin in development.

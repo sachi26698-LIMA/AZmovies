@@ -70,9 +70,10 @@ test('fixture detail navigation renders required sections and returns home', asy
   expect(await gallery.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true);
   await expect(page.getByRole('region', { name: 'Quality options' })).toBeVisible();
   await expect(page.getByRole('region', { name: 'Watch options' })).toBeVisible();
+  // Page 3: provider options open an internal intermediate page, never an external host.
   await expect(
-    page.locator('ul[aria-label="Authorized provider placeholders"] button').first(),
-  ).toHaveAttribute('aria-disabled', 'true');
+    page.locator('ul[aria-label="Authorized provider placeholders"] a').first(),
+  ).toHaveAttribute('href', /^\/go\/lnk-\d{4}\/?$/);
   await expect(page.getByRole('region', { name: 'Related movies' })).toBeVisible();
   await expect(page.getByRole('contentinfo')).toBeVisible();
   expect(await page.locator('a[href^="http"]').count()).toBe(0);
@@ -98,25 +99,29 @@ for (const width of [320, 768, 1440]) {
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/movies/the-odyssey-protocol-2');
-    const metrics = await page.evaluate(() => {
-      const grid = document.querySelector('[aria-label="Related movies"] ul');
-      const rects = Array.from(grid?.querySelectorAll(':scope > li') ?? [])
-        .slice(0, 2)
-        .map((item) => {
-          const rect = item.getBoundingClientRect();
-          return { x: rect.x, y: rect.y };
-        });
-      const [first, second] = rects;
-      return {
-        scrollWidth: document.documentElement.scrollWidth,
-        innerWidth: window.innerWidth,
-        relatedTwoColumns: Boolean(
-          first && second && Math.abs(first.y - second.y) < 1 && second.x > first.x,
-        ),
-      };
-    });
+    await expect(page.getByRole('region', { name: 'Related movies' })).toBeAttached();
+    // Poll the layout: measuring in the same tick as navigation can read pre-hydration
+    // geometry. The assertion retries until the grid has actually been laid out.
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const grid = document.querySelector('[aria-label="Related movies"] ul');
+          const rects = Array.from(grid?.querySelectorAll(':scope > li') ?? [])
+            .slice(0, 2)
+            .map((item) => {
+              const rect = item.getBoundingClientRect();
+              return { x: rect.x, y: rect.y };
+            });
+          const [first, second] = rects;
+          return Boolean(first && second && Math.abs(first.y - second.y) < 1 && second.x > first.x);
+        }),
+      )
+      .toBe(true);
+    const metrics = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      innerWidth: window.innerWidth,
+    }));
     expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.innerWidth);
-    expect(metrics.relatedTwoColumns).toBe(true);
     await expect(page.getByRole('link', { name: 'AZmovies home' })).toBeVisible();
   });
 }
