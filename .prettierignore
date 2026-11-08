@@ -1,0 +1,12 @@
+node_modules
+.next
+out
+coverage
+playwright-report
+test-results
+.artifacts
+docs/references
+package-lock.json
+next-env.d.ts
+*.jpg
+*.png

@@ -1,0 +1,141 @@
+# AZmovies — Reference Matching and UI Rules
+
+## 1. Reference status: inspected, owner approval pending
+
+Fifteen owner-supplied screenshots were inspected on 2026-11-07 and are stored ignored under `docs/references/`. The written manifest is `docs/references/README.md`. Homepage primary references are the two MOVIES4U captures (`220156` top, `220213` scrolled grid); four HDHub4u captures supplement drawer/pagination/footer evidence. Movie-detail references are nine HDHub4u files: eight 1080×2400 crops and one 1080×24313 full-page capture. The user described three MOVIES4U screenshots but two primary files were received (BLK-011), and described four detail screenshots but nine files were received (BLK-012).
+
+Raw reference images are internal design evidence only. They are not site assets and must not be committed or shipped without separate rights approval. The prototype uses AZmovies branding and original synthetic posters.
+
+## 2. Preserve these elements
+
+| Region     | Reference-derived requirement                                        | Prototype treatment                                                  |
+| ---------- | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Header     | Compact dark slate bar, menu left, gold brand center, search right   | Sticky header, 36 px icon controls, gold gradient AZmovies wordmark  |
+| Search     | Wide dark bordered input below header                                | Labeled search input, local fixture filtering, keyboard submit       |
+| Categories | Glowing colored pills; special row then seven three-button rows      | Same order/labels where supplied; inert JOIN TELEGRAM/DOWNLOAD APP   |
+| Grid       | Two poster columns, gradient red/yellow border, white metadata below | Two `minmax(0, 1fr)` tracks, 3 px gradient frame, synthetic metadata |
+| Drawer     | Left overlay panel, search field, row navigation                     | Modal drawer with focus trap, Escape/overlay close and focus return  |
+| Pagination | Blue active page, dark inactive pages, Next control                  | Accessible button pagination with current-page state                 |
+| Footer     | Black footer, brand/link rows, copyright                             | Same structure; links inert; “How To Watch?” safety wording          |
+| Telegram   | Floating blue circular control                                       | Inert aria-disabled control until official URL is supplied           |
+
+### Movie detail page (Page 2)
+
+| Region            | Reference-derived requirement                                      | Prototype treatment                                                                         |
+| ----------------- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Shared shell      | Same compact dark header/logo/menu/search and footer               | Reuses `Header`, `SideDrawer`, `Footer`, `TelegramFloating`                                 |
+| Trending strip    | Edge-to-edge horizontal poster carousel                            | Scrollable local poster carousel linking to fixture detail pages                            |
+| Secondary toolbar | Menu, yellow 4K button, white search field with blue border        | Inert 4K placeholder; search submits to homepage fixture search                             |
+| Title panel       | Dark rounded panel, white bold title, clapper icon                 | `#141414` panel, SVG clapper icon, fixture title                                            |
+| Chips             | Blue date chip, white genre chips with folder icons                | Blue date chip uses AA-safe `#0073ec`; white/black genre chips                              |
+| Info block        | Centered blue labels, gray values, red language/quality highlights | Semantic `dl`; red highlights use AA-safe `#ff6b6b`                                         |
+| Poster/stills     | Large centered poster and landscape screenshots                    | Local 2:3 poster; three original 16:9 stills in a continuous vertical stack                 |
+| Options           | Separated quality rows and watch/provider rows with gray rules     | Enabled fixtures link to local Page 3; disabled fixture options use native disabled buttons |
+| Related/footer    | Related movie grid and consistent footer                           | Two-column related fixture grid; shared footer                                              |
+
+Do not add unrelated UI, statistics, cards, gradients or animation beyond what the reference shows. Safety/accessibility deviations must be documented rather than hidden. Do not replicate the reference fake-domain warning, WhatsApp promo, betting ads, comment system or unauthorized download links.
+
+## 3. Measured tokens and implementation overrides
+
+Flat-area reference samples are generated by `npm run analyze:references` into `.artifacts/phase2/reference-analysis.json`. Global tokens live in `src/styles/globals.css`.
+
+| Token               | Reference sample             | Implemented value | Reason                                     |
+| ------------------- | ---------------------------- | ----------------- | ------------------------------------------ |
+| Page background     | `#111111`                    | `#111111`         | Matched                                    |
+| Header              | `#1b242b`                    | `#1b242b`         | Matched                                    |
+| Search background   | `#131313`                    | `#131313`         | Matched                                    |
+| Green pill          | `#00ba00`                    | `#008a00`         | White 12 px bold text requires AA contrast |
+| Top red pill        | `#ff0000`                    | `#ee0000`         | White text AA contrast                     |
+| Category red        | `#f00033`                    | `#ed0032`         | White text AA contrast                     |
+| Blue pill           | `#00a0e6`                    | `#00a0e6`         | Inert/aria-disabled special control        |
+| Orange pill         | `#eb9600`                    | `#eb9600`         | Inert/aria-disabled special control        |
+| Telegram            | `#008bd2`                    | `#008bd2`         | Inert; no invented destination             |
+| Poster border       | `#d53c44` / `#fbc600`        | Same              | Gradient frame preserved                   |
+| Drawer              | `#333333` / border `#383838` | Same              | Matched                                    |
+| Pagination active   | `#0075f1`                    | `#0073ec`         | White active-page text contrast            |
+| Pagination inactive | `#252525`                    | `#252525`         | Matched                                    |
+| Footer              | `#000000`                    | `#000000`         | Matched                                    |
+
+### Detail-page tokens
+
+| Token/region           | Reference sample    | Implemented value             | Reason                                             |
+| ---------------------- | ------------------- | ----------------------------- | -------------------------------------------------- |
+| Detail page background | `#000000`           | `#000000`                     | Matched                                            |
+| Title panel            | `#141414`           | `#141414`                     | Matched                                            |
+| Date chip              | `#1f88fc`           | `#0073ec`                     | White chip text AA contrast                        |
+| Genre chip             | `#ffffff`           | `#ffffff` with `#111111` text | Matched                                            |
+| Link blue              | `#0084eb`           | `#0084eb`                     | Matched for blue option text on black              |
+| Red heading/highlight  | `#fe0000`           | `#ff6b6b`                     | AA-safe red on black while preserving hue          |
+| Option rule            | `#373737`           | `#373737`                     | Matched                                            |
+| Muted body text        | `#c3c3c3`           | `#c3c3c3`                     | Matched                                            |
+| 4K button              | `#ffc400`           | `#ffc400` with black text     | Matched                                            |
+| Watch teal             | Reference-like teal | `#00c8b4`                     | Separates watch options; no destination configured |
+
+Detail geometry at 360 CSS px: content max-width 720 px, horizontal padding 16 px, trending posters 104×156 px, a continuous gallery (`scrollHeight` and `clientHeight` both 544 px) and a two-column related grid. See `.artifacts/phase2/prototype-metrics.json` (`detail360`).
+
+At 360 CSS px the current capture measures a 52.5 px header, 36 px search, 36 px special buttons, approximately 35 px category rows, a 20 px grid margin, 27 px column gap, 146.5 px poster width and 3 px frame. The first poster begins at y=532.5 px versus approximately y=533.3 px in the supplied reference. These are measured geometry, not a claim of pixel-perfect equality; see `PHASE2_REPORT.md`.
+
+Font: system sans-serif stack is used because the original font was not supplied/licensed. Poster ratio is 2:3. Touch targets are kept usable; compact category pills follow the reference density.
+
+### Page 3 — intermediate link page (no reference supplied)
+
+None of the 15 owner captures shows an intermediate handoff screen, so Page 3 derives its styling
+from the reference-derived detail-page tokens rather than inventing a new visual language. This derivation is
+a disclosed deviation, not a matched reference.
+
+| Element      | Treatment                                                                                             |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| Shell        | Shared `Header`, `SideDrawer`, `Footer`; black `#000000` page, without a floating overlay             |
+| Panels       | `#141414` rounded panels, blue `#0084eb` definition terms, `#c3c3c3` values, `#373737` rules          |
+| Continue     | Full-width primary blue button, 56 px high at 360 px, chevron affordance (never a play/download icon) |
+| Locked state | Native `disabled` plus a visible explanation; internal IDs and stored URLs never appear in the page   |
+| Back         | Gray chip matching the detail page's "Go to HomePage" chip, labelled "Back to Movie Details"          |
+| Warning      | `#ff6b6b` lead-in on the prototype-mode notice                                                        |
+| Link manager | Same panels/chips; white "Enabled" and red "Disabled" badges; per-row action buttons                  |
+
+Never add a countdown, auto-redirect, interstitial ad, fake "Download now" button or pop-up to this
+screen. The handoff must stay a single explicit user action.
+
+## 4. Layout and responsive procedure
+
+- Semantic `header`, `nav`, `main`, `footer`; one page-level `h1` and a grid `h2` are visually hidden where the reference has no visible heading.
+- CSS Modules own component layout; global tokens/reset own shared primitives.
+- Two poster tracks at all tested widths; desktop uses a compact 720 px max-width rather than inventing extra columns.
+- Narrow viewport rules at ≤359 px prevent pagination/category overflow while preserving access to controls.
+- Tested widths: all three pages at 320, 360, 390, 768 and 1440 px, with no document overflow; home also at 375, 1024 and 1920 px plus 320 px short-height/landscape reflow. The home and related grids retain two columns.
+- Reserve poster geometry with `aspect-ratio`; use local optimized JPEGs and priority loading for the first row.
+- Header stickiness, drawer behavior and Telegram placement follow the reference; Telegram is inert until configured.
+
+## 5. Content honesty
+
+- Fixture titles/year/language/quality are synthetic and labeled as prototype data. They are not real availability claims.
+- Quality labels are editorial descriptors, not evidence of an available file.
+- Posters are original synthetic assets with useful alt text; no scraped reference posters are shipped.
+- External action wording must describe an authorized destination when later implemented. Never label an unverified link “Watch now” or imply unauthorized downloads.
+- Footer uses “How To Watch?” rather than reference download wording.
+
+## 6. Accessibility acceptance
+
+- Target WCAG 2.2 AA: normal text contrast >=4.5:1, large text >=3:1, meaningful non-text controls >=3:1.
+- Visible focus, skip link, labeled search, current-page/category state and descriptive links/buttons.
+- Drawer is a real dialog: focus trap, Escape/overlay close and focus return.
+- Respect reduced motion; no flashing/autoplay. Floating Telegram must not cover essential controls.
+- Axe checks supplement manual checks. Chromium axe passed home/drawer/detail with no serious/critical violations; jsdom axe disables canvas-dependent visual rules and is not a contrast substitute.
+- Actual screen-reader and real-device checks remain future work.
+
+## 7. Visual matching workflow executed in Phase 2
+
+1. Inventory: inspected all six references and recorded actual content/mapping.
+2. Extract: sampled flat colors and estimated geometry; corrected misleading text/edge samples.
+3. Resolve: documented brand/poster/external-action/contrast deviations instead of silently redesigning.
+4. Build: fixture-only components and local synthetic assets.
+5. Capture: Playwright/Chromium captures at 360 DPR3, 390 DPR3, 768/1440 DPR1, drawer and detail.
+6. Compare: aligned primary-top and detail-top side-by-side artifacts `.artifacts/phase2/comparison-primary-top.png` and `.artifacts/phase2/comparison-detail-top.png`; metrics recorded separately. Synthetic content means raw pixel equality is not a fidelity score.
+7. Review: owner approval is still pending (BLK-010).
+8. Lock: visual baselines are not locked until owner approval; investigate intentional changes rather than blindly updating snapshots.
+
+## 8. Required states and evidence
+
+Implemented/tested prototype states: populated catalog, empty search/category result, loading/error/not-found, fixture detail, drawer open/closed, pagination, safe/disabled handoff and isolated manager demo. Real authenticated admin and live-redirect states remain unimplemented.
+
+Phase 2 captures and comparison artifacts exist under `.artifacts/phase2/`. Do not report owner visual approval until the owner explicitly accepts the comparison and deviations.

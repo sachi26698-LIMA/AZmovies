@@ -1,0 +1,136 @@
+:root {
+  --color-bg: #111111;
+  --color-header: #1b242b;
+  --color-text: #ffffff;
+  --color-muted: #cfcfcf;
+  --color-search-bg: #131313;
+  --color-search-border: #8b8b8b;
+  /* Reference flat-area samples: green #00ba00, top red #ff0000, category red #f00033.
+     The values below are the nearest same-hue darkened variants that keep white
+     14px bold pill text at WCAG AA contrast; geometry/glow remain reference-matched. */
+  --color-green: #008a00;
+  --color-red-top: #ee0000;
+  --color-red: #ed0032;
+  --color-blue: #00a0e6;
+  --color-orange: #eb9600;
+  --color-telegram: #008bd2;
+  --color-poster-red: #d53c44;
+  --color-poster-yellow: #fbc600;
+  --color-drawer: #333333;
+  --color-drawer-border: #383838;
+  /* Reference sample #0075f1; darkened slightly for white active-page text contrast. */
+  --color-pagination-active: #0073ec;
+  --color-pagination-bg: #252525;
+  --color-pagination-border: #cfcfcf;
+  --color-footer-bg: #000000;
+  --color-link: #1f7ff2;
+  --color-focus: #fbc600;
+
+  --space-header-gutter: 9px;
+  --space-search-gutter: 29px;
+  --space-category-gutter: 18px;
+  --space-grid-gutter: 20px;
+  --space-grid-gap: 27px;
+  --poster-border-width: 3px;
+  --header-height: 52px;
+  --category-height: 35px;
+  --radius-category: 7px;
+  --radius-search: 4px;
+
+  --font-body:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  padding-top: 10px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button[aria-disabled='true'] {
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.visually-hidden:focus {
+  position: fixed !important;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 8px 12px !important;
+  clip: auto !important;
+  background: var(--color-header);
+  color: var(--color-text);
+}
+
+.skip-link {
+  position: absolute;
+  top: -48px;
+  left: 8px;
+  z-index: 100;
+  padding: 8px 12px;
+  background: var(--color-header);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
