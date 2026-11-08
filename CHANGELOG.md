@@ -2,6 +2,12 @@
 
 All notable completed project changes are recorded here. This is a phase-controlled project, not a claim of released software versions. Dates use YYYY-MM-DD.
 
+## [Unreleased] — Preview gateway investigation (open)
+
+- A direct external request without a traffic-access header reached the E2B proxy and returned 403 “Missing traffic access token”; the actual Arena iframe request and proxy logs have not been observed.
+- The three application pages rendered in a simulated local iframe with no observed browser or asset errors. This is not a visual verification of the user's Arena preview.
+- No UI or application code was changed. Preview remains blocked pending investigation of the authenticated gateway and an owner-visible retest (BUG-014).
+
 ## [Unreleased] — 2026-11-08 — Page 3 intermediate external link page
 
 ### Added

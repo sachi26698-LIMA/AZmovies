@@ -39,6 +39,8 @@ npm run capture:prototype
 npm run compare:visual
 ```
 
+If the Arena preview is blank while the local server responds, inspect the preview gateway as well as the app. An unauthenticated external request to this sandbox's E2B preview URL returned 403 “Missing traffic access token”; the Arena iframe itself has not been visually verified. See BUG-014. Gateway credentials must not be placed in source code or browser URLs, and sandbox access restrictions must not be weakened as a workaround.
+
 The Playwright/capture scripts use `@sparticuz/chromium` and expect the prototype at `http://127.0.0.1:3000` unless `PROTOTYPE_URL` is set. Reference JPEGs are internal-only and ignored by Git; place owner-supplied files in `docs/references/` before running reference analysis.
 
 ## Pages in the prototype

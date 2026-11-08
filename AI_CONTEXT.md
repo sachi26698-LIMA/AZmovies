@@ -38,6 +38,8 @@ The GitHub CLI rejected the newer `--active` flag; plain `gh auth status` succee
 
 - Terminal probes to `api.themoviedb.org` and `cdn.playwright.dev` failed during TLS connection (curl exit 35). No live metadata response or browser binary was obtained.
 - The environment permits terminal access to GitHub, npm and Python package hosts. Browser downloads and production database connectivity remain unverified.
+- The user reported a blank grey Arena preview frame. A direct external fetch of the public E2B URL, without a traffic-access header, returned 403 “Missing traffic access token”; this response came from the proxy before the app. The actual Arena iframe request headers and proxy logs were not accessible, so its exact failure is unconfirmed. The sandbox cannot reach the public URL directly (curl TLS exit 35). See BUG-014; owner-visible preview confirmation remains pending.
+- IPv4 `0.0.0.0` and a temporary dual-stack `::` bind both served the app locally; there is no evidence that IPv6 binding caused the reported iframe failure. Do not weaken sandbox access restrictions or add tokens to source/URLs to work around the proxy.
 - Official TMDB/Better Auth documentation was retrieved through the separate web research tool. That does **not** prove future server-side TMDB connectivity.
 - npm metadata included Next 16.4.5, React 19.3.1, Better Auth 1.7.18 and Drizzle 0.45.4. Registry availability/engine metadata is not an installed compatibility test.
 

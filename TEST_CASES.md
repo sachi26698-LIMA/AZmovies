@@ -159,6 +159,12 @@ FND-06/07/09 verify inspection capabilities only. FND-08 is an environment block
 | BRW-03  | WebKit engine                                  | Same scoped matrix; not labeled real iOS Safari                                 | Not run                                                                                       |
 | BRW-04  | Real Android Chrome/iOS Safari if available    | Separately recorded device/OS results or explicit blocker                       | Not run                                                                                       |
 
+### Preview connectivity investigation (BUG-014)
+
+- **Local simulated iframe:** Chromium loaded the homepage, movie detail and `/go/lnk-0001/` in a separate sandboxed iframe. All three were visually inspected; no page/console/request errors or failed asset responses were observed. Captures: `.artifacts/preview-diagnostics/{home,detail,page3}-local-iframe.png`. These ephemeral captures are not of the actual Arena preview.
+- **Public proxy:** An external fetch without an authentication header of all three routes and a Next.js static chunk returned E2B's 403 “Missing traffic access token”. Chromium inside the sandbox could not reach the public host (`net::ERR_CONNECTION_CLOSED`); this is not the user's browser result.
+- **Actual Arena iframe:** Not verified. Browser network details, authenticated proxy behavior and platform proxy logs are inaccessible from the sandbox. The reported grey frame remains open pending platform investigation and owner-visible verification.
+
 ## 8. Security, performance and regression cases
 
 | ID      | Scenario                               | Expected result                                                                      | Status                         |
